@@ -40,4 +40,4 @@ def predict():
         return render_template("index.html",error=e) # show error if anythings fails
     
 if __name__ == "__main__":
-    app.run(debug=False) # run the web server
+    app.run(debug=False) # run the web server 
