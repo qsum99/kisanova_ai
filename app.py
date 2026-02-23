@@ -3,9 +3,9 @@ import numpy as np
 import joblib
 
 #initialize the flask 
-app=Flask(__name__)
+app=Flask(__name__, template_folder="frontend/templates") # point flask to the correct templates folder
 
-MODEL_PATH="models/crop recommedation.pkl" # model location
+MODEL_PATH="backend/models/crop recommedation.pkl" # model location
 model=joblib.load(MODEL_PATH) #loading  an pre-traind model
 
 @app.route("/") # route for home page
@@ -29,7 +29,7 @@ def predict():
         
         # return result to webpage
         return render_template(
-            "index.html",prediction=prediction,
+            "index.html", prediction=prediction,
             form_values={
                     "N": N, "P": P, "K": K,
                     "temperature": temperature, "humidity": humidity,
@@ -37,7 +37,7 @@ def predict():
                 },
         )
     except Exception as e:
-        return render_template("index.html",error=e) # show error if anythings fails
+        return render_template("index.html", error=e) # show error if anything fails
     
 if __name__ == "__main__":
     app.run(debug=False) # run the web server 
