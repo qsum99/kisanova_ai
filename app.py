@@ -1,43 +1,24 @@
-from flask import Flask, request, render_template
-import numpy as np
-import joblib
+import os
+from dotenv import load_dotenv
+from app import create_app
+from flask import render_template
 
-#initialize the flask 
-app=Flask(__name__, template_folder="frontend/templates")
+# Load environment variables here (if not already done by config)
+load_dotenv()
 
-MODEL_PATH="backend/models/crop recommedation.pkl" # model location
-model=joblib.load(MODEL_PATH) #loading  an pre-traind model
+# Create the flask app instance using the application factory pattern
+app = create_app()
 
-@app.route("/") # route for home page
+# If you still want to serve the frontend from the root URL
+@app.route("/")
 def home():
+    """Route for the home page."""
+    # Ensure frontend/templates is reachable or adjust the template folder path when initializing Flask if necessary
+    # The new architecture primarily focuses on JSON APIs (/api/predict)
+    # The frontend HTML will need to make an AJAX request to /api/predict
     return render_template("index.html")
 
-@app.route("/predict",methods=["POST"]) # route for predict page  for submission 
-def predict(): 
-    try:
-        # geting all data 
-        N=float(request.form["N"])
-        P=float(request.form["P"])
-        K=float(request.form["K"])
-        temperature=float(request.form["temperature"])
-        humidity=float(request.form["humidity"])
-        ph=float(request.form["ph"])
-        rainfall=float(request.form["rainfall"])
-
-        features= np.array([[N,P,K,temperature,humidity,ph,rainfall]]) # format data
-        prediction=model.predict(features)[0] # model prediction doing here
-        
-        # return result to webpage
-        return render_template(
-            "index.html", prediction=prediction,
-            form_values={
-                    "N": N, "P": P, "K": K,
-                    "temperature": temperature, "humidity": humidity,
-                    "ph": ph, "rainfall": rainfall,
-                },
-        )
-    except Exception as e:
-        return render_template("index.html", error=e) # show error if anything fails
-    
 if __name__ == "__main__":
-    app.run(debug=False) # run the web server 
+    # In production, use a WSGI server like gunicorn or waitress
+    # run with debug=True only for development
+    app.run(debug=True, port=5000)
