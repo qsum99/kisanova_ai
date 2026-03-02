@@ -12,8 +12,12 @@ def create_app():
     app = Flask(__name__, template_folder=template_dir)
     
     # Load configuration
-    from app.config import Config
-    app.config.from_object(Config)
+    from app import config
+    app.config.from_mapping(
+        OPENWEATHER_API_KEY=config.OPENWEATHER_API_KEY,
+        CACHE_EXPIRATION_SECONDS=config.CACHE_EXPIRATION_SECONDS,
+        MODEL_PATH=config.MODEL_PATH
+    )
     
     # Register blueprints safely inside context
     with app.app_context():
