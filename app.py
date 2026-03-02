@@ -3,7 +3,7 @@ import numpy as np
 import joblib
 
 #initialize the flask 
-app=Flask(__name__, template_folder="frontend/templates") # point flask to the correct templates folder
+app=Flask(__name__, template_folder="frontend/templates")
 
 MODEL_PATH="backend/models/crop recommedation.pkl" # model location
 model=joblib.load(MODEL_PATH) #loading  an pre-traind model
