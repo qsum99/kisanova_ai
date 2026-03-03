@@ -1,101 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌾 Crop Recommendation AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <title>🌾 Farmer AI – Crop Recommendation</title>
+  <meta name="description"
+    content="AI-powered crop recommendation. Enter soil data and select your location to get an instant, weather-aware crop suggestion." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
   <style>
-    /* ---------- reset & base ---------- */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --green: #4ade80;
+      --cyan: #22d3ee;
+      --dark: #0b1120;
+      --surface: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --dim: #475569;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+      background: var(--dark);
+      color: var(--text);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 40px 16px 60px;
-      color: #e2e8f0;
+      padding: 0 16px 80px;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    /* ---------- header ---------- */
+    /* ── animated background orbs ── */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: drift 18s ease-in-out infinite alternate;
+    }
+
+    .orb1 {
+      width: 520px;
+      height: 520px;
+      background: #16a34a;
+      top: -160px;
+      left: -140px;
+      animation-delay: 0s;
+    }
+
+    .orb2 {
+      width: 420px;
+      height: 420px;
+      background: #0e7490;
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -6s;
+    }
+
+    .orb3 {
+      width: 300px;
+      height: 300px;
+      background: #166534;
+      top: 40%;
+      left: 55%;
+      animation-delay: -12s;
+    }
+
+    @keyframes drift {
+      from {
+        transform: translate(0, 0) scale(1);
+      }
+
+      to {
+        transform: translate(30px, 40px) scale(1.08);
+      }
+    }
+
+    /* ── page wrapper ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 740px;
+      padding-top: 48px;
+    }
+
+    /* ── header ── */
     .header {
       text-align: center;
-      margin-bottom: 36px;
+      margin-bottom: 40px;
     }
 
-    .header .badge {
+    .badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(74, 222, 128, 0.15);
-      border: 1px solid rgba(74, 222, 128, 0.35);
-      color: #4ade80;
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      background: rgba(74, 222, 128, 0.12);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: var(--green);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 6px 16px;
+      padding: 5px 16px;
       border-radius: 999px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     .header h1 {
-      font-size: clamp(1.8rem, 5vw, 2.8rem);
-      font-weight: 700;
-      background: linear-gradient(90deg, #4ade80, #22d3ee);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(100deg, var(--green) 0%, var(--cyan) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      line-height: 1.2;
-      margin-bottom: 10px;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
     }
 
     .header p {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      max-width: 420px;
+      color: var(--muted);
+      font-size: 0.97rem;
+      max-width: 480px;
       margin: 0 auto;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
-    /* ---------- card ---------- */
-    .card {
-      width: 100%;
-      max-width: 680px;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 24px;
-      padding: 40px 36px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    /* ── step indicator ── */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 32px;
     }
 
-    /* ---------- section titles ---------- */
-    .section-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--dim);
+      transition: all 0.3s;
+    }
+
+    .step.active .step-dot {
+      background: rgba(74, 222, 128, 0.2);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .step.done .step-dot {
+      background: var(--green);
+      border-color: var(--green);
+      color: #000;
+    }
+
+    .step-label {
+      font-size: 0.65rem;
+      color: var(--dim);
       text-transform: uppercase;
-      color: #64748b;
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      letter-spacing: 0.08em;
+      font-weight: 600;
     }
 
-    /* ---------- grid ---------- */
+    .step.active .step-label {
+      color: var(--green);
+    }
+
+    .step.done .step-label {
+      color: var(--muted);
+    }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      margin: 0 8px;
+      margin-bottom: 22px;
+      min-width: 40px;
+    }
+
+    .step-line.done {
+      background: var(--green);
+    }
+
+    /* ── main card ── */
+    .card {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 40px 36px;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+      animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    /* ── section labels ── */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── grid ── */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 18px;
-      margin-bottom: 28px;
+      margin-bottom: 30px;
     }
 
-    /* ---------- form groups ---------- */
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (max-width: 560px) {
+
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 28px 20px;
+      }
+    }
+
+    /* ── form group ── */
     .form-group {
       display: flex;
       flex-direction: column;
@@ -103,256 +289,648 @@
     }
 
     .form-group label {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-
-    .form-group label .icon {
-      font-size: 0.95rem;
+      gap: 7px;
     }
 
     .form-group .hint {
-      font-size: 0.68rem;
-      color: #475569;
-      margin-top: -2px;
+      font-size: 0.66rem;
+      color: var(--dim);
     }
 
-    .form-group input {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+    .form-group input,
+    .form-group select {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.11);
       color: #f1f5f9;
       font-family: 'Inter', sans-serif;
-      font-size: 0.95rem;
-      padding: 10px 14px;
-      border-radius: 10px;
+      font-size: 0.93rem;
+      padding: 11px 14px;
+      border-radius: 11px;
       outline: none;
+      width: 100%;
       transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
     }
 
-    .form-group input::placeholder { color: #475569; }
+    .form-group select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
 
-    .form-group input:focus {
-      border-color: #4ade80;
+    .form-group select option {
+      background: #1e293b;
+      color: #f1f5f9;
+    }
+
+    .form-group input::placeholder {
+      color: var(--dim);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--green);
       background: rgba(74, 222, 128, 0.06);
-      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.12);
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.13);
     }
 
-    /* remove number arrows */
-    .form-group input[type="number"]::-webkit-inner-spin-button,
-    .form-group input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-    .form-group input[type="number"] { -moz-appearance: textfield; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
 
-    /* ---------- submit button ---------- */
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    /* ── slider ── */
+    .slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .slider-val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--green);
+      text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--green);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+    }
+
+    /* ── ph display ── */
+    .ph-meter {
+      margin-top: 4px;
+      height: 7px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #4ade80 50%, #22d3ee 75%, #8b5cf6 100%);
+      position: relative;
+      overflow: visible;
+    }
+
+    .ph-cursor {
+      position: absolute;
+      top: -4px;
+      width: 15px;
+      height: 15px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+      transform: translateX(-50%);
+      transition: left 0.2s;
+    }
+
+    /* ── submit button ── */
     .btn {
       width: 100%;
-      padding: 14px 24px;
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      padding: 15px 24px;
+      background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
       color: #fff;
       font-family: 'Inter', sans-serif;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
       border: none;
-      border-radius: 12px;
+      border-radius: 13px;
       cursor: pointer;
-      letter-spacing: 0.03em;
       transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35);
-      margin-top: 8px;
+      box-shadow: 0 6px 24px rgba(34, 197, 94, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
+      letter-spacing: 0.02em;
     }
 
     .btn:hover {
-      opacity: 0.9;
+      opacity: 0.92;
       transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(34, 197, 94, 0.45);
+      box-shadow: 0 10px 32px rgba(34, 197, 94, 0.5);
     }
 
-    .btn:active { transform: translateY(0); }
+    .btn:active {
+      transform: translateY(0);
+    }
 
-    /* ---------- result box ---------- */
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── spinner ── */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      display: none;
+    }
+
+    /* ── result card ── */
     .result-box {
       margin-top: 28px;
-      padding: 22px 26px;
-      background: linear-gradient(135deg, rgba(74,222,128,0.12) 0%, rgba(34,211,238,0.12) 100%);
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      border-radius: 16px;
+      border-radius: 20px;
+      overflow: hidden;
+      animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+      display: none;
+    }
+
+    .result-top {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.18) 0%, rgba(34, 211, 238, 0.14) 100%);
+      border: 1px solid rgba(74, 222, 128, 0.28);
+      border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      padding: 26px 28px;
       display: flex;
       align-items: center;
-      gap: 18px;
-      animation: fadeUp 0.4s ease;
+      gap: 20px;
     }
 
-    .result-box .result-icon {
-      font-size: 2.6rem;
-      flex-shrink: 0;
+    .crop-emoji {
+      font-size: 3.2rem;
+      line-height: 1;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
     }
 
-    .result-box .result-text p {
-      font-size: 0.78rem;
+    .result-label {
+      font-size: 0.72rem;
       color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-weight: 600;
+      letter-spacing: 0.12em;
+      font-weight: 700;
       margin-bottom: 4px;
     }
 
-    .result-box .result-text h2 {
-      font-size: 1.7rem;
-      font-weight: 700;
-      background: linear-gradient(90deg, #4ade80, #22d3ee);
+    .result-name {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       text-transform: capitalize;
     }
 
-    /* ---------- error box ---------- */
+    .result-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── weather strips ── */
+    .weather-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: none;
+      border-radius: 0 0 20px 20px;
+    }
+
+    .w-item {
+      padding: 16px 14px;
+      text-align: center;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .w-item:last-child {
+      border-right: none;
+    }
+
+    .w-icon {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+
+    .w-label {
+      font-size: 0.6rem;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+    }
+
+    .w-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 3px;
+    }
+
+    /* ── error box ── */
     .error-box {
-      margin-top: 24px;
-      padding: 16px 20px;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      margin-top: 22px;
+      padding: 15px 20px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.28);
       border-radius: 12px;
       color: #fca5a5;
-      font-size: 0.88rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      font-size: 0.87rem;
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
       animation: fadeUp 0.3s ease;
     }
 
-    /* ---------- footer ---------- */
+    /* ── footer ── */
     .footer {
-      margin-top: 32px;
+      margin-top: 36px;
       text-align: center;
-      color: #334155;
-      font-size: 0.78rem;
+      color: #1e293b;
+      font-size: 0.75rem;
     }
 
-    /* ---------- animation ---------- */
+    /* ── animations ── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .card { animation: fadeUp 0.5s ease; }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
+
 <body>
 
-  <!-- ===== HEADER ===== -->
-  <div class="header">
-    <div class="badge">🌱 AI-Powered</div>
-    <h1>Crop Recommendation System</h1>
-    <p>Enter your soil properties and local weather data to get an AI-based crop recommendation.</p>
+  <!-- animated bg -->
+  <div class="bg-orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
   </div>
 
-  <!-- ===== CARD ===== -->
-  <div class="card">
-    <form action="/predict" method="POST" autocomplete="off">
+  <div class="page">
 
-      <!-- Soil Nutrients -->
-      <div class="section-label">🧪 Soil Nutrients (kg/ha)</div>
-      <div class="grid">
+    <!-- ── HEADER ── -->
+    <div class="header">
+      <div class="badge">🌱 AI-Powered · Live Weather</div>
+      <h1>Farmer AI<br>Crop Recommendation</h1>
+      <p>Enter your soil data and select your location. We'll fetch live weather automatically and recommend the best
+        crop.</p>
+    </div>
 
-        <div class="form-group">
-          <label><span class="icon">🟦</span> Nitrogen (N)</label>
-          <span class="hint">Range: 0 – 140</span>
-          <input type="number" name="N" id="N" placeholder="e.g. 90"
-                 value="{{ form_values.N if form_values else '' }}"
-                 step="0.01" min="0" max="140" required />
-        </div>
-
-        <div class="form-group">
-          <label><span class="icon">🟧</span> Phosphorus (P)</label>
-          <span class="hint">Range: 5 – 145</span>
-          <input type="number" name="P" id="P" placeholder="e.g. 42"
-                 value="{{ form_values.P if form_values else '' }}"
-                 step="0.01" min="0" max="145" required />
-        </div>
-
-        <div class="form-group">
-          <label><span class="icon">🟪</span> Potassium (K)</label>
-          <span class="hint">Range: 5 – 205</span>
-          <input type="number" name="K" id="K" placeholder="e.g. 43"
-                 value="{{ form_values.K if form_values else '' }}"
-                 step="0.01" min="0" max="205" required />
-        </div>
-
+    <!-- ── STEP INDICATOR ── -->
+    <div class="steps" id="steps">
+      <div class="step active" id="step1">
+        <div class="step-dot">1</div>
+        <div class="step-label">Soil</div>
       </div>
-
-      <!-- Environmental -->
-      <div class="section-label">🌦️ Environmental Conditions</div>
-      <div class="grid">
-
-        <div class="form-group">
-          <label><span class="icon">🌡️</span> Temperature (°C)</label>
-          <span class="hint">Range: 8 – 45</span>
-          <input type="number" name="temperature" id="temperature" placeholder="e.g. 21.7"
-                 value="{{ form_values.temperature if form_values else '' }}"
-                 step="0.01" min="0" max="60" required />
-        </div>
-
-        <div class="form-group">
-          <label><span class="icon">💧</span> Humidity (%)</label>
-          <span class="hint">Range: 14 – 100</span>
-          <input type="number" name="humidity" id="humidity" placeholder="e.g. 82.0"
-                 value="{{ form_values.humidity if form_values else '' }}"
-                 step="0.01" min="0" max="100" required />
-        </div>
-
-        <div class="form-group">
-          <label><span class="icon">⚗️</span> Soil pH</label>
-          <span class="hint">Range: 3.5 – 10</span>
-          <input type="number" name="ph" id="ph" placeholder="e.g. 6.5"
-                 value="{{ form_values.ph if form_values else '' }}"
-                 step="0.001" min="0" max="14" required />
-        </div>
-
-        <div class="form-group">
-          <label><span class="icon">🌧️</span> Rainfall (mm)</label>
-          <span class="hint">Range: 20 – 300</span>
-          <input type="number" name="rainfall" id="rainfall" placeholder="e.g. 202.9"
-                 value="{{ form_values.rainfall if form_values else '' }}"
-                 step="0.01" min="0" max="500" required />
-        </div>
-
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="step2">
+        <div class="step-dot">2</div>
+        <div class="step-label">Location</div>
       </div>
-
-      <button type="submit" class="btn">
-        <span>🔍</span> Predict Best Crop
-      </button>
-    </form>
-
-    <!-- Result -->
-    {% if prediction %}
-    <div class="result-box">
-      <div class="result-icon">🌾</div>
-      <div class="result-text">
-        <p>Recommended Crop</p>
-        <h2>{{ prediction }}</h2>
+      <div class="step-line" id="line2"></div>
+      <div class="step" id="step3">
+        <div class="step-dot">3</div>
+        <div class="step-label">Result</div>
       </div>
     </div>
-    {% endif %}
 
-    <!-- Error -->
-    {% if error %}
-    <div class="error-box">
-      <span>⚠️</span>
-      <span>{{ error }}</span>
+    <!-- ── CARD ── -->
+    <div class="card">
+      <form id="predict-form" autocomplete="off">
+
+        <!-- ── Soil Nutrients ── -->
+        <div class="section-label">🧪 Soil Nutrients (kg/ha)</div>
+        <div class="grid grid-3" style="margin-bottom:10px;">
+
+          <div class="form-group">
+            <label>🟦 Nitrogen (N)</label>
+            <span class="hint">0 – 140 kg/ha</span>
+            <input type="number" id="N" placeholder="e.g. 90" step="0.1" min="0" max="140" required />
+          </div>
+
+          <div class="form-group">
+            <label>🟧 Phosphorus (P)</label>
+            <span class="hint">5 – 145 kg/ha</span>
+            <input type="number" id="P" placeholder="e.g. 42" step="0.1" min="0" max="145" required />
+          </div>
+
+          <div class="form-group">
+            <label>🟪 Potassium (K)</label>
+            <span class="hint">5 – 205 kg/ha</span>
+            <input type="number" id="K" placeholder="e.g. 43" step="0.1" min="0" max="205" required />
+          </div>
+
+        </div>
+
+        <!-- ── Soil pH slider ── -->
+        <div class="grid grid-2" style="margin-bottom:30px; align-items:end;">
+          <div class="form-group">
+            <label>⚗️ Soil pH</label>
+            <span class="hint">3.5 – 10 (acidic → alkaline)</span>
+            <div class="slider-wrap">
+              <div class="slider-val" id="ph-val">6.5</div>
+              <input type="range" id="pH" min="3.5" max="10" step="0.1" value="6.5" />
+              <div class="ph-meter">
+                <div class="ph-cursor" id="ph-cursor"></div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="justify-content:flex-end;">
+            <label style="margin-bottom:6px;">📖 pH Guide</label>
+            <div style="font-size:0.72rem; color:var(--dim); line-height:1.8;">
+              <span style="color:#ef4444;">● Acidic</span> &lt; 6.0 &nbsp;
+              <span style="color:#4ade80;">● Neutral</span> 6–7 &nbsp;
+              <span style="color:#8b5cf6;">● Alkaline</span> &gt; 7
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Location ── -->
+        <div class="section-label">📍 Location (auto-fetches live weather)</div>
+        <div class="grid grid-3">
+
+          <div class="form-group">
+            <label>🌍 Country</label>
+            <select id="country_code" required>
+              <option value="" disabled selected>Select country</option>
+              <option value="IN">🇮🇳 India</option>
+              <option value="US">🇺🇸 USA</option>
+              <option value="GB">🇬🇧 UK</option>
+              <option value="AU">🇦🇺 Australia</option>
+              <option value="PK">🇵🇰 Pakistan</option>
+              <option value="BD">🇧🇩 Bangladesh</option>
+              <option value="NP">🇳🇵 Nepal</option>
+              <option value="LK">🇱🇰 Sri Lanka</option>
+              <option value="CN">🇨🇳 China</option>
+              <option value="BR">🇧🇷 Brazil</option>
+              <option value="DE">🇩🇪 Germany</option>
+              <option value="FR">🇫🇷 France</option>
+              <option value="NG">🇳🇬 Nigeria</option>
+              <option value="KE">🇰🇪 Kenya</option>
+              <option value="ZA">🇿🇦 South Africa</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>🗺️ State / Region</label>
+            <select id="state_code" required>
+              <option value="" disabled selected>Select country first</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>🏙️ City</label>
+            <input type="text" id="city_name" placeholder="e.g. Mumbai" required />
+          </div>
+
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn">
+          <div class="spinner" id="spinner"></div>
+          <span id="btn-text">🔍 &nbsp;Predict Best Crop</span>
+        </button>
+      </form>
+
+      <!-- ── RESULT ── -->
+      <div class="result-box" id="result-box">
+        <div class="result-top">
+          <div class="crop-emoji" id="crop-emoji">🌾</div>
+          <div>
+            <div class="result-label">Recommended Crop</div>
+            <div class="result-name" id="result-crop">—</div>
+            <div class="result-sub" id="result-loc">—</div>
+          </div>
+        </div>
+        <div class="weather-strip">
+          <div class="w-item">
+            <div class="w-icon">🌡️</div>
+            <div class="w-label">Temperature</div>
+            <div class="w-val" id="w-temp">—</div>
+          </div>
+          <div class="w-item">
+            <div class="w-icon">💧</div>
+            <div class="w-label">Humidity</div>
+            <div class="w-val" id="w-humidity">—</div>
+          </div>
+          <div class="w-item">
+            <div class="w-icon">🌧️</div>
+            <div class="w-label">Rainfall</div>
+            <div class="w-val" id="w-rain">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ERROR ── -->
+      <div class="error-box" id="error-box">
+        <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+        <span id="error-msg"></span>
+      </div>
     </div>
-    {% endif %}
 
+    <div class="footer">Farmer AI Project &bull; Crop Recommendation Engine &bull; Powered by OpenWeatherMap</div>
   </div>
 
-  <div class="footer">Farmer AI Project &bull; Crop Recommendation Engine</div>
+  <script>
+    /* ── State data per country ── */
+    const STATES = {
+      IN: [
+        ["MH", "Maharashtra"], ["KA", "Karnataka"], ["TN", "Tamil Nadu"],
+        ["AP", "Andhra Pradesh"], ["TS", "Telangana"], ["KL", "Kerala"],
+        ["GJ", "Gujarat"], ["RJ", "Rajasthan"], ["MP", "Madhya Pradesh"],
+        ["UP", "Uttar Pradesh"], ["BR", "Bihar"], ["WB", "West Bengal"],
+        ["PB", "Punjab"], ["HR", "Haryana"], ["AS", "Assam"],
+        ["OR", "Odisha"], ["JH", "Jharkhand"], ["CG", "Chhattisgarh"],
+        ["HP", "Himachal Pradesh"], ["UK", "Uttarakhand"], ["DL", "Delhi"],
+        ["GA", "Goa"],
+      ],
+      US: [
+        ["CA", "California"], ["TX", "Texas"], ["FL", "Florida"], ["NY", "New York"],
+        ["IL", "Illinois"], ["PA", "Pennsylvania"], ["OH", "Ohio"], ["GA", "Georgia"],
+        ["NC", "North Carolina"], ["MI", "Michigan"], ["WA", "Washington"],
+        ["AZ", "Arizona"], ["CO", "Colorado"], ["OR", "Oregon"], ["MN", "Minnesota"],
+        ["IA", "Iowa"], ["KS", "Kansas"], ["NE", "Nebraska"], ["MO", "Missouri"],
+      ],
+      GB: [["ENG", "England"], ["SCT", "Scotland"], ["WLS", "Wales"], ["NIR", "Northern Ireland"]],
+      AU: [["NSW", "New South Wales"], ["VIC", "Victoria"], ["QLD", "Queensland"], ["WA", "Western Australia"], ["SA", "South Australia"], ["TAS", "Tasmania"]],
+      PK: [["PB", "Punjab"], ["SD", "Sindh"], ["KP", "Khyber Pakhtunkhwa"], ["BL", "Balochistan"]],
+      BD: [["DH", "Dhaka"], ["CT", "Chittagong"], ["SY", "Sylhet"], ["RJ", "Rajshahi"], ["KH", "Khulna"]],
+      NP: [["BA", "Bagmati"], ["GA", "Gandaki"], ["LU", "Lumbini"], ["KA", "Karnali"]],
+      LK: [["WP", "Western"], ["CP", "Central"], ["SP", "Southern"], ["NP", "Northern"], ["EP", "Eastern"]],
+      CN: [["GD", "Guangdong"], ["SC", "Sichuan"], ["HN", "Hunan"], ["AH", "Anhui"], ["HA", "Henan"], ["HB", "Hebei"]],
+      BR: [["SP", "São Paulo"], ["MG", "Minas Gerais"], ["RJ", "Rio de Janeiro"], ["RS", "Rio Grande do Sul"], ["BA", "Bahia"]],
+      DE: [["BY", "Bavaria"], ["NW", "North Rhine-Westphalia"], ["BW", "Baden-Württemberg"], ["HE", "Hesse"]],
+      FR: [["IDF", "Île-de-France"], ["ARA", "Auvergne-Rhône-Alpes"], ["OCC", "Occitanie"], ["NAQ", "Nouvelle-Aquitaine"]],
+      NG: [["LA", "Lagos"], ["KN", "Kano"], ["OY", "Oyo"], ["KD", "Kaduna"], ["OS", "Osun"]],
+      KE: [["NAI", "Nairobi"], ["MOM", "Mombasa"], ["KIS", "Kisumu"], ["NAK", "Nakuru"]],
+      ZA: [["GP", "Gauteng"], ["WC", "Western Cape"], ["KZN", "KwaZulu-Natal"], ["FS", "Free State"]],
+    };
 
+    /* ── Crop emoji map ── */
+    const CROP_EMOJI = {
+      rice: "🌾", wheat: "🌾", maize: "🌽", corn: "🌽",
+      cotton: "🌿", sugarcane: "🎋", jute: "🌿", coffee: "☕",
+      banana: "🍌", mango: "🥭", grapes: "🍇", apple: "🍎",
+      orange: "🍊", watermelon: "🍉", pomegranate: "🍎", papaya: "🍈",
+      coconut: "🥥", muskmelon: "🍈", chickpea: "🫘", lentil: "🫘",
+      kidneybeans: "🫘", blackgram: "🫘", mothbeans: "🫘", mungbean: "🫘",
+      pigeonpeas: "🫘", jute2: "🌿", default: "🌱",
+    };
+
+    function getCropEmoji(crop) {
+      const key = (crop || "").toLowerCase().replace(/\s+/g, "");
+      for (const [k, v] of Object.entries(CROP_EMOJI)) {
+        if (key.includes(k)) return v;
+      }
+      return "🌱";
+    }
+
+    /* ── Country → State dropdown ── */
+    const countryEl = document.getElementById('country_code');
+    const stateEl = document.getElementById('state_code');
+
+    countryEl.addEventListener('change', () => {
+      const states = STATES[countryEl.value] || [];
+      stateEl.innerHTML = states.length
+        ? states.map(([code, name]) => `<option value="${code}">${name}</option>`).join('')
+        : '<option value="" disabled>No states available</option>';
+      stateEl.disabled = states.length === 0;
+    });
+
+    /* ── pH slider ── */
+    const phRange = document.getElementById('pH');
+    const phVal = document.getElementById('ph-val');
+    const phCursor = document.getElementById('ph-cursor');
+
+    function updatePh() {
+      const min = parseFloat(phRange.min), max = parseFloat(phRange.max);
+      const pct = (parseFloat(phRange.value) - min) / (max - min) * 100;
+      phVal.textContent = parseFloat(phRange.value).toFixed(1);
+      phCursor.style.left = pct + '%';
+    }
+    phRange.addEventListener('input', updatePh);
+    updatePh();
+
+    /* ── form state helpers ── */
+    const btn = document.getElementById('submit-btn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btn-text');
+    const resultBox = document.getElementById('result-box');
+    const errorBox = document.getElementById('error-box');
+
+    function setStep(n) {
+      for (let i = 1; i <= 3; i++) {
+        const el = document.getElementById('step' + i);
+        el.classList.remove('active', 'done');
+        if (i < n) el.classList.add('done');
+        if (i === n) el.classList.add('active');
+      }
+      ['line1', 'line2'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        el.classList.toggle('done', idx + 2 <= n);
+      });
+    }
+
+    function setLoading(on) {
+      btn.disabled = on;
+      spinner.style.display = on ? 'block' : 'none';
+      btnText.textContent = on ? 'Fetching weather & predicting…' : '🔍  Predict Best Crop';
+    }
+
+    function showError(msg) {
+      errorBox.style.display = 'flex';
+      resultBox.style.display = 'none';
+      document.getElementById('error-msg').textContent = msg;
+      setStep(2);
+    }
+
+    function showResult(data) {
+      errorBox.style.display = 'none';
+      resultBox.style.display = 'block';
+      const crop = data.recommended_crop || '—';
+      document.getElementById('result-crop').textContent = crop;
+      document.getElementById('crop-emoji').textContent = getCropEmoji(crop);
+
+      const city = document.getElementById('city_name').value;
+      const country = countryEl.options[countryEl.selectedIndex]?.text?.replace(/^.{2}\s/, '') || '';
+      document.getElementById('result-loc').textContent = `📍 ${city}, ${country}`;
+
+      document.getElementById('w-temp').textContent = data.weather_used.temperature + ' °C';
+      document.getElementById('w-humidity').textContent = data.weather_used.humidity + ' %';
+      document.getElementById('w-rain').textContent = data.weather_used.rainfall_5day_total + ' mm';
+      setStep(3);
+    }
+
+    /* ── step highlight on scroll / interaction ── */
+    document.getElementById('city_name').addEventListener('focus', () => setStep(2));
+
+    /* ── submit ── */
+    document.getElementById('predict-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      resultBox.style.display = 'none';
+      setLoading(true);
+      setStep(2);
+
+      const payload = {
+        N: parseFloat(document.getElementById('N').value),
+        P: parseFloat(document.getElementById('P').value),
+        K: parseFloat(document.getElementById('K').value),
+        pH: parseFloat(document.getElementById('pH').value),
+        city_name: document.getElementById('city_name').value.trim(),
+        state_code: stateEl.value.trim(),
+        country_code: countryEl.value.trim().toLowerCase(),
+      };
+
+      try {
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) showError(data.error || 'An unexpected error occurred.');
+        else showResult(data);
+      } catch (err) {
+        showError('Could not reach the server. Make sure the Flask app is running.');
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
 </body>
+
 </html>
