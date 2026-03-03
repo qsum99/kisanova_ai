@@ -6,19 +6,6 @@ crop_routes = Blueprint('crop_routes', __name__)
 
 @crop_routes.route('/predict', methods=['POST'])
 def predict_crop():
-    """
-    Predicts the best crop given soil nutrients and location.
-    Expects JSON payload:
-    {
-        "N": float,
-        "P": float,
-        "K": float,
-        "pH": float,
-        "city_name": "String",
-        "state_code": "String",
-        "country_code": "String"
-    }
-    """
     try:
         data = request.get_json()
         if not data:
@@ -45,7 +32,7 @@ def predict_crop():
             return jsonify({"error": "Location details cannot be empty."}), 400
             
         # 2. Fetch Weather Data
-        weather_data = weather_service.get_weater_data(city_name, state_code, country_code)
+        weather_data = weather_service.get_weather_data(city_name, state_code, country_code)
         
         if not weather_data:
             return jsonify({"error": "Could not fetch weather data from API."}), 502

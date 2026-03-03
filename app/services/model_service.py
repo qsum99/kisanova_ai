@@ -1,16 +1,17 @@
 import joblib
 import numpy as np
 import os
+from app.config import MODEL_PATH
+
 
 def load_model():
     try:
-        model_path="models/crop recommedation.pkl"
+        model_path=MODEL_PATH
         if os.path.exists(model_path):
             return joblib.load(model_path)
     except Exception as e:
         print(f"Error loading model:{e}")
         return None
-        
 model=load_model()
 
 def predict(feature_list):
@@ -23,3 +24,7 @@ def predict(feature_list):
     except Exception as e:
         print(f"Error during prdiction :{e}")
         return None
+
+    
+
+      

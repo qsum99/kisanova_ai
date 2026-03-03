@@ -1,13 +1,8 @@
-import requests 
-import os
-from dotenv import load_dotenv
+import requests
+from app.config import OPENWEATHER_API_KEY
 
-basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-env_path = os.path.join(basedir, '.env')
-load_dotenv(dotenv_path=env_path)
-
-def get_weater_data(city_name,state_code,country_code):
-    api = os.environ.get('OPENWEATHER_API_KEY')
+def get_weather_data(city_name, state_code, country_code):
+    api = OPENWEATHER_API_KEY
     if not api:
         print("Error: OPENWEATHER_API_KEY could not be found in the .env file.")
         return None
