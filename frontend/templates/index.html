@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 
 <head>
   <meta charset="UTF-8" />
@@ -9,6 +9,7 @@
     content="AI-powered crop recommendation. Enter soil data and select your location to get an instant, weather-aware crop suggestion." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     *,
     *::before,
@@ -330,6 +331,39 @@
     .form-group select option {
       background: #1e293b;
       color: #f1f5f9;
+    }
+
+    /* ── Bootstrap .form-select dark override ── */
+    .form-select {
+      background-color: rgba(255, 255, 255, 0.06) !important;
+      border: 1px solid rgba(255, 255, 255, 0.11) !important;
+      color: #f1f5f9 !important;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.93rem;
+      padding: 11px 14px;
+      border-radius: 11px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 14px center !important;
+      background-size: 12px !important;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-select:focus {
+      border-color: var(--green) !important;
+      background-color: rgba(74, 222, 128, 0.06) !important;
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.13) !important;
+      color: #f1f5f9 !important;
+    }
+
+    .form-select option {
+      background: #1e293b;
+      color: #f1f5f9;
+    }
+
+    .form-select:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
     .form-group input::placeholder {
@@ -681,40 +715,27 @@
 
         <!-- ── Location ── -->
         <div class="section-label">📍 Location (auto-fetches live weather)</div>
-        <div class="grid grid-3">
+        <div class="row g-3 mb-4">
 
-          <div class="form-group">
+          <div class="col-md-4 form-group">
             <label>🌍 Country</label>
-            <select id="country_code" required>
-              <option value="" disabled selected>Select country</option>
-              <option value="IN">🇮🇳 India</option>
-              <option value="US">🇺🇸 USA</option>
-              <option value="GB">🇬🇧 UK</option>
-              <option value="AU">🇦🇺 Australia</option>
-              <option value="PK">🇵🇰 Pakistan</option>
-              <option value="BD">🇧🇩 Bangladesh</option>
-              <option value="NP">🇳🇵 Nepal</option>
-              <option value="LK">🇱🇰 Sri Lanka</option>
-              <option value="CN">🇨🇳 China</option>
-              <option value="BR">🇧🇷 Brazil</option>
-              <option value="DE">🇩🇪 Germany</option>
-              <option value="FR">🇫🇷 France</option>
-              <option value="NG">🇳🇬 Nigeria</option>
-              <option value="KE">🇰🇪 Kenya</option>
-              <option value="ZA">🇿🇦 South Africa</option>
+            <select id="country_code" class="form-select" required>
+              <option value="" disabled selected>Loading...</option>
             </select>
           </div>
 
-          <div class="form-group">
+          <div class="col-md-4 form-group">
             <label>🗺️ State / Region</label>
-            <select id="state_code" required>
+            <select id="state_code" class="form-select" required disabled>
               <option value="" disabled selected>Select country first</option>
             </select>
           </div>
 
-          <div class="form-group">
+          <div class="col-md-4 form-group">
             <label>🏙️ City</label>
-            <input type="text" id="city_name" placeholder="e.g. Mumbai" required />
+            <select id="city_name" class="form-select" required disabled>
+              <option value="" disabled selected>Select state first</option>
+            </select>
           </div>
 
         </div>
@@ -765,40 +786,6 @@
   </div>
 
   <script>
-    /* ── State data per country ── */
-    const STATES = {
-      IN: [
-        ["MH", "Maharashtra"], ["KA", "Karnataka"], ["TN", "Tamil Nadu"],
-        ["AP", "Andhra Pradesh"], ["TS", "Telangana"], ["KL", "Kerala"],
-        ["GJ", "Gujarat"], ["RJ", "Rajasthan"], ["MP", "Madhya Pradesh"],
-        ["UP", "Uttar Pradesh"], ["BR", "Bihar"], ["WB", "West Bengal"],
-        ["PB", "Punjab"], ["HR", "Haryana"], ["AS", "Assam"],
-        ["OR", "Odisha"], ["JH", "Jharkhand"], ["CG", "Chhattisgarh"],
-        ["HP", "Himachal Pradesh"], ["UK", "Uttarakhand"], ["DL", "Delhi"],
-        ["GA", "Goa"],
-      ],
-      US: [
-        ["CA", "California"], ["TX", "Texas"], ["FL", "Florida"], ["NY", "New York"],
-        ["IL", "Illinois"], ["PA", "Pennsylvania"], ["OH", "Ohio"], ["GA", "Georgia"],
-        ["NC", "North Carolina"], ["MI", "Michigan"], ["WA", "Washington"],
-        ["AZ", "Arizona"], ["CO", "Colorado"], ["OR", "Oregon"], ["MN", "Minnesota"],
-        ["IA", "Iowa"], ["KS", "Kansas"], ["NE", "Nebraska"], ["MO", "Missouri"],
-      ],
-      GB: [["ENG", "England"], ["SCT", "Scotland"], ["WLS", "Wales"], ["NIR", "Northern Ireland"]],
-      AU: [["NSW", "New South Wales"], ["VIC", "Victoria"], ["QLD", "Queensland"], ["WA", "Western Australia"], ["SA", "South Australia"], ["TAS", "Tasmania"]],
-      PK: [["PB", "Punjab"], ["SD", "Sindh"], ["KP", "Khyber Pakhtunkhwa"], ["BL", "Balochistan"]],
-      BD: [["DH", "Dhaka"], ["CT", "Chittagong"], ["SY", "Sylhet"], ["RJ", "Rajshahi"], ["KH", "Khulna"]],
-      NP: [["BA", "Bagmati"], ["GA", "Gandaki"], ["LU", "Lumbini"], ["KA", "Karnali"]],
-      LK: [["WP", "Western"], ["CP", "Central"], ["SP", "Southern"], ["NP", "Northern"], ["EP", "Eastern"]],
-      CN: [["GD", "Guangdong"], ["SC", "Sichuan"], ["HN", "Hunan"], ["AH", "Anhui"], ["HA", "Henan"], ["HB", "Hebei"]],
-      BR: [["SP", "São Paulo"], ["MG", "Minas Gerais"], ["RJ", "Rio de Janeiro"], ["RS", "Rio Grande do Sul"], ["BA", "Bahia"]],
-      DE: [["BY", "Bavaria"], ["NW", "North Rhine-Westphalia"], ["BW", "Baden-Württemberg"], ["HE", "Hesse"]],
-      FR: [["IDF", "Île-de-France"], ["ARA", "Auvergne-Rhône-Alpes"], ["OCC", "Occitanie"], ["NAQ", "Nouvelle-Aquitaine"]],
-      NG: [["LA", "Lagos"], ["KN", "Kano"], ["OY", "Oyo"], ["KD", "Kaduna"], ["OS", "Osun"]],
-      KE: [["NAI", "Nairobi"], ["MOM", "Mombasa"], ["KIS", "Kisumu"], ["NAK", "Nakuru"]],
-      ZA: [["GP", "Gauteng"], ["WC", "Western Cape"], ["KZN", "KwaZulu-Natal"], ["FS", "Free State"]],
-    };
-
     /* ── Crop emoji map ── */
     const CROP_EMOJI = {
       rice: "🌾", wheat: "🌾", maize: "🌽", corn: "🌽",
@@ -818,17 +805,68 @@
       return "🌱";
     }
 
-    /* ── Country → State dropdown ── */
+    /* ── Location dynamic dropdowns using CountriesNow API ── */
     const countryEl = document.getElementById('country_code');
     const stateEl = document.getElementById('state_code');
+    const cityEl = document.getElementById('city_name');
+
+    let countriesData = [];
+
+    async function loadCountries() {
+      try {
+        const res = await fetch('https://countriesnow.space/api/v0.1/countries/states');
+        const json = await res.json();
+        countriesData = json.data;
+
+        countryEl.innerHTML = '<option value="" disabled selected>Select country</option>' +
+          countriesData.map(c => `<option value="${c.iso2}" data-name="${c.name}">${c.name}</option>`).join('');
+      } catch (err) {
+        console.error('Failed to load countries', err);
+        countryEl.innerHTML = '<option value="" disabled>Error loading countries</option>';
+      }
+    }
 
     countryEl.addEventListener('change', () => {
-      const states = STATES[countryEl.value] || [];
-      stateEl.innerHTML = states.length
-        ? states.map(([code, name]) => `<option value="${code}">${name}</option>`).join('')
-        : '<option value="" disabled>No states available</option>';
+      const selectedIso2 = countryEl.value;
+      const countryObj = countriesData.find(c => c.iso2 === selectedIso2);
+      const states = countryObj ? countryObj.states : [];
+
+      stateEl.innerHTML = '<option value="" disabled selected>Select state</option>' +
+        states.map(s => `<option value="${s.state_code}" data-name="${s.name}">${s.name}</option>`).join('');
+
       stateEl.disabled = states.length === 0;
+      cityEl.innerHTML = '<option value="" disabled selected>Select state first</option>';
+      cityEl.disabled = true;
     });
+
+    stateEl.addEventListener('change', async () => {
+      const countryName = countryEl.options[countryEl.selectedIndex].getAttribute('data-name');
+      const stateName = stateEl.options[stateEl.selectedIndex].getAttribute('data-name');
+
+      cityEl.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
+      cityEl.disabled = true;
+
+      try {
+        const res = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ country: countryName, state: stateName })
+        });
+        const json = await res.json();
+        const cities = json.data || [];
+
+        cityEl.innerHTML = cities.length
+          ? '<option value="" disabled selected>Select city</option>' + cities.map(city => `<option value="${city}">${city}</option>`).join('')
+          : '<option value="" disabled>No cities available</option>';
+        cityEl.disabled = cities.length === 0;
+      } catch (err) {
+        console.error('Failed to load cities', err);
+        cityEl.innerHTML = '<option value="" disabled>Error loading</option>';
+      }
+    });
+
+    // Initialize locations
+    loadCountries();
 
     /* ── pH slider ── */
     const phRange = document.getElementById('pH');
@@ -884,8 +922,8 @@
       document.getElementById('result-crop').textContent = crop;
       document.getElementById('crop-emoji').textContent = getCropEmoji(crop);
 
-      const city = document.getElementById('city_name').value;
-      const country = countryEl.options[countryEl.selectedIndex]?.text?.replace(/^.{2}\s/, '') || '';
+      const city = cityEl.value;
+      const country = countryEl.options[countryEl.selectedIndex]?.getAttribute('data-name') || '';
       document.getElementById('result-loc').textContent = `📍 ${city}, ${country}`;
 
       document.getElementById('w-temp').textContent = data.weather_used.temperature + ' °C';
@@ -910,9 +948,9 @@
         P: parseFloat(document.getElementById('P').value),
         K: parseFloat(document.getElementById('K').value),
         pH: parseFloat(document.getElementById('pH').value),
-        city_name: document.getElementById('city_name').value.trim(),
+        city_name: cityEl.value.trim(),
         state_code: stateEl.value.trim(),
-        country_code: countryEl.value.trim().toLowerCase(),
+        country_code: countryEl.value.trim(),
       };
 
       try {

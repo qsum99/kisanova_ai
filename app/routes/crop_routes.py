@@ -41,10 +41,8 @@ def predict_crop():
         features = [n_val, p_val, k_val, temperature, humidity, ph_val, rainfall_total]
 
         recommended_crop = model_service.predict(features)
-
-        # Convert numpy type to plain Python string for JSON serialization
         recommended_crop = str(recommended_crop)
-    
+
         response = {
             "recommended_crop": recommended_crop,
             "weather_used": {
