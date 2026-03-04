@@ -810,6 +810,11 @@
     const stateEl = document.getElementById('state_code');
     const cityEl = document.getElementById('city_name');
 
+    // Strips diacritics/accents so names like "Bānāvar" become "Banavar"
+    function normalizeName(str) {
+      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
     let countriesData = [];
 
     async function loadCountries() {
@@ -856,7 +861,7 @@
         const cities = json.data || [];
 
         cityEl.innerHTML = cities.length
-          ? '<option value="" disabled selected>Select city</option>' + cities.map(city => `<option value="${city}">${city}</option>`).join('')
+          ? '<option value="" disabled selected>Select city</option>' + cities.map(city => { const n = normalizeName(city); return `<option value="${n}">${n}</option>`; }).join('')
           : '<option value="" disabled>No cities available</option>';
         cityEl.disabled = cities.length === 0;
       } catch (err) {
