@@ -20,12 +20,6 @@ def get_weather_data(city_name, state_code, country_code):
     else:
         print(f"Warning: Could not fetch forecast data ({forecast_resp.status_code}). Using fallback rainfall.")
 
-     
-
-    print(f"Temperature: {temp}")
-    print(f"Humidity: {humidity}")
-    print(f"Estimated monthly rainfall: {rain_of_day} mm")
-
     return {
         "temperature": temp,
         "humidity": humidity,

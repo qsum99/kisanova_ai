@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 
-MODEL_FILE="models/crop recommedation.pkl" # path for saveing an model
+MODEL_FILE="backend/models/crop recommedation.pkl" # path for saveing an model
 
 if  not os.path.exists(MODEL_FILE): # if model file doesn't exist
     df=pd.read_csv("datasets/Crop_recommendation.csv") # calling an dataset
