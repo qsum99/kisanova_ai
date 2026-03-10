@@ -27,6 +27,20 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+# Large dataset files
+notebooks/raw_data/Merged Dataset/
+notebooks/raw_data/.ipynb_checkpoints/
+
+# Large ML model files
+*.h5
+*.pkl
+*.pt
+*.pth
+*.bin
+*.onnx
+*.pb
+*.tflite
+
 
 # Virtual environments
 venv/
