@@ -1,25 +1,24 @@
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
 import requests
 import datetime
 from typing import List, Dict, Any
 from app.config import GOV_API_KEY
 from app.utils.database import get_db_connection
 
-# Default to the common AGMARKNET daily crop price endpoint on data.gov.in
 GOV_API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
 
 def fetch_and_store_prices() -> int:
-    """
-    Fetches the latest daily prices from the Government API and
-    stores them into the SQLite database.
-    """
     if not GOV_API_KEY:
         raise ValueError("GOV_API_KEY is not configured in .env.")
         
-    # We fetch a chunk of recent data
     params = {
         "api-key": GOV_API_KEY,
         "format": "json",
-        "limit": 1000  # Adjust as needed
+        "limit": 10
     }
     
     try:
@@ -35,8 +34,6 @@ def fetch_and_store_prices() -> int:
             
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # Clear old cache to avoid ballooning DB since this is a leaderboard of *current* prices
         cursor.execute("DELETE FROM crop_prices")
         
         insert_query = '''
@@ -53,8 +50,7 @@ def fetch_and_store_prices() -> int:
             commodity = r.get("commodity", "Unknown")
             variety = r.get("variety", "Unknown")
             arrival_date = r.get("arrival_date", "")
-            
-            # Helper to safely parse strings to floats
+    
             def parse_price(val):
                 try:
                     return float(val)
@@ -84,11 +80,38 @@ def fetch_and_store_prices() -> int:
         raise
 
 
+def check_and_refresh_cache():
+    """Checks if the database is empty or older than 12 hours, and updates if necessary."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT last_updated FROM crop_prices LIMIT 1")
+    row = cursor.fetchone()
+    
+    needs_refresh = False
+    if not row:
+        needs_refresh = True
+    else:
+        last_updated_str = row["last_updated"]
+        try:
+            last_updated = datetime.datetime.strptime(last_updated_str, "%Y-%m-%d %H:%M:%S")
+            if (datetime.datetime.utcnow() - last_updated).total_seconds() > 12 * 3600:
+                needs_refresh = True
+        except ValueError:
+            # Fallback if parsing fails
+            needs_refresh = True
+            
+    conn.close()
+    
+    if needs_refresh:
+        print("[market_price_service] Cache empty or expired (>12 hours). Auto-refreshing data...")
+        try:
+            fetch_and_store_prices()
+        except Exception as e:
+            print(f"[market_price_service] Failed to auto-refresh cache: {e}")
+
 def get_latest_prices(state: str=None, commodity: str=None) -> List[Dict[str, Any]]:
-    """
-    Retrieves the crop leaderboard from the SQLite DB.
-    Can be filtered by state and/or commodity.
-    """
+    check_and_refresh_cache()
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -101,8 +124,6 @@ def get_latest_prices(state: str=None, commodity: str=None) -> List[Dict[str, An
     if commodity:
         query += " AND commodity LIKE ?"
         params.append(f"%{commodity}%")
-        
-    # Order by highest modal price for the 'leaderboard' feel
     query += " ORDER BY modal_price DESC LIMIT 100"
     
     cursor.execute(query, params)
@@ -125,4 +146,8 @@ def get_latest_prices(state: str=None, commodity: str=None) -> List[Dict[str, An
         })
         
     conn.close()
+    print(result)
     return result
+
+if __name__ == "__main__":
+    get_latest_prices()
