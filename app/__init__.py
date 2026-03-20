@@ -20,12 +20,18 @@ def create_app():
         MODEL_PATH=config.MODEL_PATH
     )
     
+    # Initialize DB (creates sqlite DB and tables if they don't exist)
+    from app.utils.database import init_db
+    init_db()
+    
     # Register blueprints safely inside context
     with app.app_context():
         from app.routes.crop_routes import crop_routes
         from app.routes.disease_routes import disease_routes
+        from app.routes.price_routes import price_routes
         app.register_blueprint(crop_routes, url_prefix='/api')
         app.register_blueprint(disease_routes, url_prefix='/api')
+        app.register_blueprint(price_routes, url_prefix='/api')
     
     # Simple health check endpoint
     @app.route('/health')
