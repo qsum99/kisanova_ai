@@ -2,7 +2,8 @@ import sqlite3
 import os
 from werkzeug.security import generate_password_hash
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'farmer_ai.db')
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+DB_PATH = os.path.join(BASE_DIR, 'database', 'farmer_ai.db')
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)

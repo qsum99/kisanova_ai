@@ -18,12 +18,12 @@ def fetch_and_store_prices() -> int:
     params = {
         "api-key": GOV_API_KEY,
         "format": "json",
-        "limit": 2000
+        "limit": 10000
     }
     
     try:
         print(f"[market_price_service] Fetching data from {GOV_API_URL}")
-        response = requests.get(GOV_API_URL, params=params, timeout=60)
+        response = requests.get(GOV_API_URL, params=params, timeout=120)
         response.raise_for_status()
         data = response.json()
         
@@ -144,9 +144,7 @@ def get_latest_prices(state: str=None, commodity: str=None) -> List[Dict[str, An
             "modal_price": row["modal_price"],
             "last_updated": row["last_updated"]
         })
-        
     conn.close()
-    print(result)
     return result
 
 def get_top_crops(limit: int=30) -> List[Dict[str, Any]]:
