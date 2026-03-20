@@ -1,0 +1,539 @@
+{% extends "base.html" %}
+
+{% block title %}🌾 Crop Prediction – Farmer AI{% endblock %}
+{% block description %}Enter soil nutrient data and your location to get an AI-powered crop recommendation based on live weather data.{% endblock %}
+{% block nav_crop %}active{% endblock %}
+
+{% block head %}
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-top: 20px;
+    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    background: linear-gradient(100deg, var(--green) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .page-header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ── step indicator ── */
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 28px;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--dim);
+    transition: all 0.3s;
+  }
+
+  .step.active .step-dot {
+    background: rgba(74, 222, 128, 0.2);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .step.done .step-dot {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+
+  .step-label {
+    font-size: 0.65rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .step.active .step-label { color: var(--green); }
+  .step.done .step-label { color: var(--muted); }
+
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin: 0 8px;
+    margin-bottom: 22px;
+    min-width: 40px;
+  }
+
+  .step-line.done { background: var(--green); }
+
+  /* ── grid ── */
+  .grid { display: grid; gap: 18px; margin-bottom: 30px; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+  @media (max-width: 560px) {
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* ── slider ── */
+  .slider-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .slider-val { font-size: 0.95rem; font-weight: 700; color: var(--green); text-align: right; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--green);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+  }
+
+  /* ── pH meter ── */
+  .ph-meter {
+    margin-top: 4px;
+    height: 7px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #4ade80 50%, #22d3ee 75%, #8b5cf6 100%);
+    position: relative;
+    overflow: visible;
+  }
+
+  .ph-cursor {
+    position: absolute;
+    top: -4px;
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+    transform: translateX(-50%);
+    transition: left 0.2s;
+  }
+
+  /* ── result card ── */
+  .result-box {
+    margin-top: 28px;
+    border-radius: 20px;
+    overflow: hidden;
+    animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    display: none;
+  }
+
+  .result-top {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.18) 0%, rgba(34, 211, 238, 0.14) 100%);
+    border: 1px solid rgba(74, 222, 128, 0.28);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    padding: 26px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .crop-emoji { font-size: 3.2rem; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+
+  .result-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .result-name {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: capitalize;
+  }
+
+  .result-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── weather strips ── */
+  .weather-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: none;
+    border-radius: 0 0 20px 20px;
+  }
+
+  .w-item { padding: 16px 14px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06); }
+  .w-item:last-child { border-right: none; }
+  .w-icon { font-size: 1.3rem; margin-bottom: 4px; }
+  .w-label { font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  .w-val { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 740px;">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>🌾 Crop Recommendation</h1>
+    <p>Enter your soil data and select your location. We'll fetch live weather and recommend the best crop.</p>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="steps" id="steps">
+    <div class="step active" id="step1">
+      <div class="step-dot">1</div>
+      <div class="step-label">Soil</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step" id="step2">
+      <div class="step-dot">2</div>
+      <div class="step-label">Location</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3">
+      <div class="step-dot">3</div>
+      <div class="step-label">Result</div>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="glass-card">
+    <form id="predict-form" autocomplete="off">
+
+      <!-- Soil Nutrients -->
+      <div class="section-label">🧪 Soil Nutrients (kg/ha)</div>
+      <div class="grid grid-3" style="margin-bottom:10px;">
+        <div class="form-group">
+          <label>🟦 Nitrogen (N)</label>
+          <span class="hint">0 – 140 kg/ha</span>
+          <input type="number" id="N" placeholder="e.g. 90" step="0.1" min="0" max="140" required />
+        </div>
+        <div class="form-group">
+          <label>🟧 Phosphorus (P)</label>
+          <span class="hint">5 – 145 kg/ha</span>
+          <input type="number" id="P" placeholder="e.g. 42" step="0.1" min="0" max="145" required />
+        </div>
+        <div class="form-group">
+          <label>🟪 Potassium (K)</label>
+          <span class="hint">5 – 205 kg/ha</span>
+          <input type="number" id="K" placeholder="e.g. 43" step="0.1" min="0" max="205" required />
+        </div>
+      </div>
+
+      <!-- Soil pH -->
+      <div class="grid grid-2" style="margin-bottom:30px; align-items:end;">
+        <div class="form-group">
+          <label>⚗️ Soil pH</label>
+          <span class="hint">3.5 – 10 (acidic → alkaline)</span>
+          <div class="slider-wrap">
+            <div class="slider-val" id="ph-val">6.5</div>
+            <input type="range" id="pH" min="3.5" max="10" step="0.1" value="6.5" />
+            <div class="ph-meter">
+              <div class="ph-cursor" id="ph-cursor"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <label style="margin-bottom:6px;">📖 pH Guide</label>
+          <div style="font-size:0.72rem; color:var(--dim); line-height:1.8;">
+            <span style="color:#ef4444;">● Acidic</span> &lt; 6.0 &nbsp;
+            <span style="color:#4ade80;">● Neutral</span> 6–7 &nbsp;
+            <span style="color:#8b5cf6;">● Alkaline</span> &gt; 7
+          </div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="section-label">📍 Location (auto-fetches live weather)</div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4 form-group">
+          <label>🌍 Country</label>
+          <select id="country_code" class="form-select" required>
+            <option value="" disabled selected>Loading...</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group">
+          <label>🗺️ State / Region</label>
+          <select id="state_code" class="form-select" required disabled>
+            <option value="" disabled selected>Select country first</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group">
+          <label>🏙️ City</label>
+          <select id="city_name" class="form-select" required disabled>
+            <option value="" disabled selected>Select state first</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn-farmer">
+        <div class="spinner" id="spinner"></div>
+        <span id="btn-text">🔍 &nbsp;Predict Best Crop</span>
+      </button>
+    </form>
+
+    <!-- Result -->
+    <div class="result-box" id="result-box">
+      <div class="result-top">
+        <div class="crop-emoji" id="crop-emoji">🌾</div>
+        <div>
+          <div class="result-label">Recommended Crop</div>
+          <div class="result-name" id="result-crop">—</div>
+          <div class="result-sub" id="result-loc">—</div>
+        </div>
+      </div>
+      <div class="weather-strip">
+        <div class="w-item">
+          <div class="w-icon">🌡️</div>
+          <div class="w-label">Temperature</div>
+          <div class="w-val" id="w-temp">—</div>
+        </div>
+        <div class="w-item">
+          <div class="w-icon">💧</div>
+          <div class="w-label">Humidity</div>
+          <div class="w-val" id="w-humidity">—</div>
+        </div>
+        <div class="w-item">
+          <div class="w-icon">🌧️</div>
+          <div class="w-label">Rainfall</div>
+          <div class="w-val" id="w-rain">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box">
+      <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+      <span id="error-msg"></span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* ── Crop emoji map ── */
+  const CROP_EMOJI = {
+    rice: "🌾", wheat: "🌾", maize: "🌽", corn: "🌽",
+    cotton: "🌿", sugarcane: "🎋", jute: "🌿", coffee: "☕",
+    banana: "🍌", mango: "🥭", grapes: "🍇", apple: "🍎",
+    orange: "🍊", watermelon: "🍉", pomegranate: "🍎", papaya: "🍈",
+    coconut: "🥥", muskmelon: "🍈", chickpea: "🫘", lentil: "🫘",
+    kidneybeans: "🫘", blackgram: "🫘", mothbeans: "🫘", mungbean: "🫘",
+    pigeonpeas: "🫘", default: "🌱",
+  };
+
+  function getCropEmoji(crop) {
+    const key = (crop || "").toLowerCase().replace(/\s+/g, "");
+    for (const [k, v] of Object.entries(CROP_EMOJI)) {
+      if (key.includes(k)) return v;
+    }
+    return "🌱";
+  }
+
+  /* ── Location dynamic dropdowns ── */
+  const countryEl = document.getElementById('country_code');
+  const stateEl = document.getElementById('state_code');
+  const cityEl = document.getElementById('city_name');
+
+  function normalizeName(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  let countriesData = [];
+
+  async function loadCountries() {
+    try {
+      const res = await fetch('https://countriesnow.space/api/v0.1/countries/states');
+      const json = await res.json();
+      countriesData = json.data;
+      countryEl.innerHTML = '<option value="" disabled selected>Select country</option>' +
+        countriesData.map(c => `<option value="${c.iso2}" data-name="${c.name}">${c.name}</option>`).join('');
+    } catch (err) {
+      console.error('Failed to load countries', err);
+      countryEl.innerHTML = '<option value="" disabled>Error loading countries</option>';
+    }
+  }
+
+  countryEl.addEventListener('change', () => {
+    const selectedIso2 = countryEl.value;
+    const countryObj = countriesData.find(c => c.iso2 === selectedIso2);
+    const states = countryObj ? countryObj.states : [];
+    stateEl.innerHTML = '<option value="" disabled selected>Select state</option>' +
+      states.map(s => `<option value="${s.state_code}" data-name="${s.name}">${s.name}</option>`).join('');
+    stateEl.disabled = states.length === 0;
+    cityEl.innerHTML = '<option value="" disabled selected>Select state first</option>';
+    cityEl.disabled = true;
+  });
+
+  stateEl.addEventListener('change', async () => {
+    const countryName = countryEl.options[countryEl.selectedIndex].getAttribute('data-name');
+    const stateName = stateEl.options[stateEl.selectedIndex].getAttribute('data-name');
+    cityEl.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
+    cityEl.disabled = true;
+    try {
+      const res = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: countryName, state: stateName })
+      });
+      const json = await res.json();
+      const cities = json.data || [];
+      cityEl.innerHTML = cities.length
+        ? '<option value="" disabled selected>Select city</option>' + cities.map(city => { const n = normalizeName(city); return `<option value="${n}">${n}</option>`; }).join('')
+        : '<option value="" disabled>No cities available</option>';
+      cityEl.disabled = cities.length === 0;
+    } catch (err) {
+      console.error('Failed to load cities', err);
+      cityEl.innerHTML = '<option value="" disabled>Error loading</option>';
+    }
+  });
+
+  loadCountries();
+
+  /* ── pH slider ── */
+  const phRange = document.getElementById('pH');
+  const phVal = document.getElementById('ph-val');
+  const phCursor = document.getElementById('ph-cursor');
+
+  function updatePh() {
+    const min = parseFloat(phRange.min), max = parseFloat(phRange.max);
+    const pct = (parseFloat(phRange.value) - min) / (max - min) * 100;
+    phVal.textContent = parseFloat(phRange.value).toFixed(1);
+    phCursor.style.left = pct + '%';
+  }
+  phRange.addEventListener('input', updatePh);
+  updatePh();
+
+  /* ── Form state helpers ── */
+  const btn = document.getElementById('submit-btn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btn-text');
+  const resultBox = document.getElementById('result-box');
+  const errorBox = document.getElementById('error-box');
+
+  function setStep(n) {
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById('step' + i);
+      el.classList.remove('active', 'done');
+      if (i < n) el.classList.add('done');
+      if (i === n) el.classList.add('active');
+    }
+    ['line1', 'line2'].forEach((id, idx) => {
+      document.getElementById(id).classList.toggle('done', idx + 2 <= n);
+    });
+  }
+
+  function setLoading(on) {
+    btn.disabled = on;
+    spinner.style.display = on ? 'block' : 'none';
+    btnText.textContent = on ? 'Fetching weather & predicting…' : '🔍  Predict Best Crop';
+  }
+
+  function showError(msg) {
+    errorBox.style.display = 'flex';
+    resultBox.style.display = 'none';
+    document.getElementById('error-msg').textContent = msg;
+    setStep(2);
+  }
+
+  function showResult(data) {
+    errorBox.style.display = 'none';
+    resultBox.style.display = 'block';
+    const crop = data.recommended_crop || '—';
+    document.getElementById('result-crop').textContent = crop;
+    document.getElementById('crop-emoji').textContent = getCropEmoji(crop);
+    const city = cityEl.value;
+    const country = countryEl.options[countryEl.selectedIndex]?.getAttribute('data-name') || '';
+    document.getElementById('result-loc').textContent = `📍 ${city}, ${country}`;
+    document.getElementById('w-temp').textContent = data.weather_used.temperature + ' °C';
+    document.getElementById('w-humidity').textContent = data.weather_used.humidity + ' %';
+    document.getElementById('w-rain').textContent = data.weather_used.rainfall_5day_total + ' mm';
+    setStep(3);
+  }
+
+  cityEl.addEventListener('focus', () => setStep(2));
+
+  /* ── Submit ── */
+  document.getElementById('predict-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+    resultBox.style.display = 'none';
+    setLoading(true);
+    setStep(2);
+
+    const payload = {
+      N: parseFloat(document.getElementById('N').value),
+      P: parseFloat(document.getElementById('P').value),
+      K: parseFloat(document.getElementById('K').value),
+      pH: parseFloat(document.getElementById('pH').value),
+      city_name: cityEl.value.trim(),
+      state_code: stateEl.value.trim(),
+      country_code: countryEl.value.trim(),
+    };
+
+    try {
+      const res = await fetch('/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) showError(data.error || 'An unexpected error occurred.');
+      else showResult(data);
+    } catch (err) {
+      showError('Could not reach the server. Make sure the Flask app is running.');
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>
+{% endblock %}

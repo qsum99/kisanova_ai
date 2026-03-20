@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}🔬 Disease Detection – Farmer AI{% endblock %}
+{% block description %}Upload a photo of your plant leaf and let AI identify diseases instantly with treatment recommendations.{% endblock %}
+{% block nav_disease %}active{% endblock %}
+
+{% block head %}
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-top: 20px;
+    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    background: linear-gradient(100deg, var(--cyan) 0%, var(--green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .page-header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ── Upload area ── */
+  .upload-zone {
+    border: 2px dashed rgba(34, 211, 238, 0.3);
+    border-radius: 20px;
+    padding: 50px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    background: rgba(34, 211, 238, 0.03);
+    margin-bottom: 24px;
+  }
+
+  .upload-zone:hover,
+  .upload-zone.dragover {
+    border-color: var(--cyan);
+    background: rgba(34, 211, 238, 0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(34, 211, 238, 0.15);
+  }
+
+  .upload-zone.has-file {
+    border-color: var(--green);
+    background: rgba(74, 222, 128, 0.04);
+    padding: 24px;
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .upload-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .upload-hint {
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+
+  .upload-browse {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 8px 22px;
+    border-radius: 10px;
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    color: var(--cyan);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .upload-browse:hover {
+    background: rgba(34, 211, 238, 0.1);
+    border-color: var(--cyan);
+  }
+
+  .upload-file-input {
+    display: none;
+  }
+
+  /* ── Image preview ── */
+  .preview-container {
+    display: none;
+    margin-top: 12px;
+  }
+
+  .preview-container.show {
+    display: block;
+  }
+
+  .preview-img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    display: block;
+    margin: 0 auto;
+  }
+
+  .file-info {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .file-name {
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  .remove-file {
+    color: #ef4444;
+    cursor: pointer;
+    margin-left: 10px;
+    font-weight: 600;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+  }
+
+  .remove-file:hover {
+    opacity: 0.7;
+  }
+
+  /* ── Result card ── */
+  .disease-result {
+    display: none;
+    margin-top: 28px;
+    border-radius: 20px;
+    overflow: hidden;
+    animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .disease-result.show {
+    display: block;
+  }
+
+  .disease-result-header {
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.18) 0%, rgba(74, 222, 128, 0.14) 100%);
+    border: 1px solid rgba(34, 211, 238, 0.28);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .disease-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    flex-shrink: 0;
+  }
+
+  .disease-name-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .disease-name {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--cyan), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .confidence-high {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--green);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+
+  .confidence-mid {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+
+  .confidence-low {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .disease-result-body {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: none;
+    border-radius: 0 0 20px 20px;
+    padding: 24px 28px;
+  }
+
+  .treatment-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .treatment-text {
+    font-size: 0.92rem;
+    color: var(--text);
+    line-height: 1.7;
+    padding: 16px;
+    background: rgba(74, 222, 128, 0.04);
+    border: 1px solid rgba(74, 222, 128, 0.12);
+    border-radius: 12px;
+  }
+
+  /* ── Tips section ── */
+  .tips-section {
+    margin-top: 36px;
+    animation: fadeUp 0.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .tip-item:last-child {
+    border-bottom: none;
+  }
+
+  .tip-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .tip-text {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .tip-text strong {
+    color: var(--text);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 680px;">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>🔬 Plant Disease Detection</h1>
+    <p>Upload a photo of your plant's leaf. Our AI model will identify diseases and suggest treatments instantly.</p>
+  </div>
+
+  <!-- Card -->
+  <div class="glass-card">
+    <form id="disease-form" enctype="multipart/form-data">
+
+      <div class="section-label">📷 Upload Leaf Image</div>
+
+      <!-- Upload zone -->
+      <div class="upload-zone" id="upload-zone">
+        <span class="upload-icon">🍃</span>
+        <div class="upload-title">Drag & drop your leaf image here</div>
+        <div class="upload-hint">Supports JPG, PNG, WEBP — Max 10 MB</div>
+        <span class="upload-browse" id="browse-btn">Browse Files</span>
+        <input type="file" id="image-input" class="upload-file-input" accept="image/*" />
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-container" id="preview-container">
+        <img id="preview-img" class="preview-img" alt="Leaf preview" />
+        <div class="file-info">
+          <span class="file-name" id="file-name"></span>
+          <span class="remove-file" id="remove-file">✕ Remove</span>
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn-farmer" style="background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%); box-shadow: 0 6px 24px rgba(6, 182, 212, 0.4);">
+        <div class="spinner" id="spinner"></div>
+        <span id="btn-text">🔬 &nbsp;Analyze Leaf</span>
+      </button>
+    </form>
+
+    <!-- Result -->
+    <div class="disease-result" id="disease-result">
+      <div class="disease-result-header">
+        <div class="disease-icon" id="disease-icon">🦠</div>
+        <div>
+          <div class="disease-name-label">Detected Disease</div>
+          <div class="disease-name" id="disease-name">—</div>
+          <div class="confidence-badge confidence-high" id="confidence-badge">
+            <i class="bi bi-bullseye"></i>
+            <span id="confidence-val">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="disease-result-body">
+        <div class="treatment-title">💊 Recommended Treatment</div>
+        <div class="treatment-text" id="treatment-text">—</div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box">
+      <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+      <span id="error-msg"></span>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="glass-card tips-section">
+    <div class="section-label">💡 Tips for Best Results</div>
+    <div class="tip-item">
+      <span class="tip-icon">📸</span>
+      <div class="tip-text"><strong>Use a clear photo</strong> — Make sure the leaf is in focus and well-lit.</div>
+    </div>
+    <div class="tip-item">
+      <span class="tip-icon">🍂</span>
+      <div class="tip-text"><strong>Capture the affected area</strong> — Focus on the part of the leaf showing symptoms.</div>
+    </div>
+    <div class="tip-item">
+      <span class="tip-icon">🌿</span>
+      <div class="tip-text"><strong>Plain background</strong> — Place the leaf on a contrasting surface for better detection.</div>
+    </div>
+    <div class="tip-item">
+      <span class="tip-icon">📐</span>
+      <div class="tip-text"><strong>Single leaf</strong> — Upload one leaf at a time for the most accurate result.</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const uploadZone = document.getElementById('upload-zone');
+  const imageInput = document.getElementById('image-input');
+  const browseBtn = document.getElementById('browse-btn');
+  const previewContainer = document.getElementById('preview-container');
+  const previewImg = document.getElementById('preview-img');
+  const fileName = document.getElementById('file-name');
+  const removeFile = document.getElementById('remove-file');
+  const diseaseResult = document.getElementById('disease-result');
+  const errorBox = document.getElementById('error-box');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btn-text');
+  const submitBtn = document.getElementById('submit-btn');
+
+  /* Track the selected file in a variable (works for both browse & drag-drop) */
+  let selectedFile = null;
+
+  /* ── Browse click ── */
+  browseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    imageInput.click();
+  });
+
+  uploadZone.addEventListener('click', () => {
+    imageInput.click();
+  });
+
+  /* ── Drag & drop ── */
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type.startsWith('image/')) {
+      selectedFile = files[0];
+      showPreview(selectedFile);
+    }
+  });
+
+  /* ── File select ── */
+  imageInput.addEventListener('change', () => {
+    if (imageInput.files.length > 0) {
+      selectedFile = imageInput.files[0];
+      showPreview(selectedFile);
+    }
+  });
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      fileName.textContent = file.name;
+      previewContainer.classList.add('show');
+      uploadZone.classList.add('has-file');
+      uploadZone.querySelector('.upload-icon').textContent = '✅';
+      uploadZone.querySelector('.upload-title').textContent = 'Image selected!';
+      uploadZone.querySelector('.upload-hint').textContent = 'Click to change file';
+      uploadZone.querySelector('.upload-browse').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* ── Remove file ── */
+  removeFile.addEventListener('click', () => {
+    selectedFile = null;
+    imageInput.value = '';
+    previewContainer.classList.remove('show');
+    uploadZone.classList.remove('has-file');
+    uploadZone.querySelector('.upload-icon').textContent = '🍃';
+    uploadZone.querySelector('.upload-title').textContent = 'Drag & drop your leaf image here';
+    uploadZone.querySelector('.upload-hint').textContent = 'Supports JPG, PNG, WEBP — Max 10 MB';
+    uploadZone.querySelector('.upload-browse').style.display = 'inline-block';
+    diseaseResult.classList.remove('show');
+  });
+
+  /* ── Loading state ── */
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    spinner.style.display = on ? 'block' : 'none';
+    btnText.textContent = on ? 'Analyzing image…' : '🔬  Analyze Leaf';
+  }
+
+  function showError(msg) {
+    errorBox.style.display = 'flex';
+    diseaseResult.classList.remove('show');
+    document.getElementById('error-msg').textContent = msg;
+  }
+
+  function getConfidenceClass(conf) {
+    if (conf >= 80) return 'confidence-high';
+    if (conf >= 50) return 'confidence-mid';
+    return 'confidence-low';
+  }
+
+  function showResult(data) {
+    errorBox.style.display = 'none';
+    diseaseResult.classList.add('show');
+
+    document.getElementById('disease-name').textContent = data.disease_name || '—';
+    const conf = data.confidence || 0;
+    const confBadge = document.getElementById('confidence-badge');
+    confBadge.className = 'confidence-badge ' + getConfidenceClass(conf);
+    document.getElementById('confidence-val').textContent = conf.toFixed(1) + '% confidence';
+    document.getElementById('treatment-text').textContent = data.treatment || 'No treatment information available.';
+
+    // Icon based on severity
+    const icon = conf >= 80 ? '🦠' : conf >= 50 ? '⚠️' : '❓';
+    document.getElementById('disease-icon').textContent = icon;
+  }
+
+  /* ── Submit ── */
+  document.getElementById('disease-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      showError('Please select an image first.');
+      return;
+    }
+
+    errorBox.style.display = 'none';
+    diseaseResult.classList.remove('show');
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
+    try {
+      const res = await fetch('/api/predict-disease', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) showError(data.error || 'An unexpected error occurred.');
+      else showResult(data);
+    } catch (err) {
+      showError('Could not reach the server. Make sure the Flask app is running.');
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>
+{% endblock %}

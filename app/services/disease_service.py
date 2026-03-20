@@ -1,31 +1,168 @@
-import onnxruntime as ort 
+import onnxruntime as ort
 import os
-# from utils.image_preprocessing import preprocessing
 import numpy as np
+from PIL import Image
+import io
+MODEL_PATH = "app/models/ensemble_model_final.onnx"
 
-model_path="models/ensemble_model_final.onnx"
-
+CLASS_NAMES = [
+    "Apple__black_rot",
+    "Apple__healthy",
+    "Apple__rust",
+    "Apple__scab",
+    "Cassava__bacterial_blight",
+    "Cassava__brown_streak_disease",
+    "Cassava__green_mottle",
+    "Cassava__healthy",
+    "Cassava__mosaic_disease",
+    "Cherry__healthy",
+    "Cherry__powdery_mildew",
+    "Chili__healthy",
+    "Chili__leaf curl",
+    "Chili__leaf spot",
+    "Chili__whitefly",
+    "Chili__yellowish",
+    "Coffee__cercospora_leaf_spot",
+    "Coffee__healthy",
+    "Coffee__red_spider_mite",
+    "Coffee__rust",
+    "Corn__common_rust",
+    "Corn__gray_leaf_spot",
+    "Corn__healthy",
+    "Corn__northern_leaf_blight",
+    "Cucumber__diseased",
+    "Cucumber__healthy",
+    "Gauva__diseased",
+    "Gauva__healthy",
+    "Grape__black_measles",
+    "Grape__black_rot",
+    "Grape__healthy",
+    "Grape__leaf_blight_(isariopsis_leaf_spot)",
+    "Jamun__diseased",
+    "Jamun__healthy",
+    "Lemon__diseased",
+    "Lemon__healthy",
+    "Mango__diseased",
+    "Mango__healthy",
+    "Peach__bacterial_spot",
+    "Peach__healthy",
+    "Pepper_bell__bacterial_spot",
+    "Pepper_bell__healthy",
+    "Pomegranate__diseased",
+    "Pomegranate__healthy",
+    "Potato__early_blight",
+    "Potato__healthy",
+    "Potato__late_blight",
+    "Rice__brown_spot",
+    "Rice__healthy",
+    "Rice__hispa",
+    "Rice__leaf_blast",
+    "Rice__neck_blast",
+    "Soybean__bacterial_blight",
+    "Soybean__caterpillar",
+    "Soybean__diabrotica_speciosa",
+    "Soybean__downy_mildew",
+    "Soybean__healthy",
+    "Soybean__mosaic_virus",
+    "Soybean__powdery_mildew",
+    "Soybean__rust",
+    "Soybean__southern_blight",
+    "Strawberry___leaf_scorch",
+    "Strawberry__healthy",
+    "Sugarcane__bacterial_blight",
+    "Sugarcane__healthy",
+    "Sugarcane__red_rot",
+    "Sugarcane__red_stripe",
+    "Sugarcane__rust",
+    "Tea__algal_leaf",
+    "Tea__anthracnose",
+    "Tea__bird_eye_spot",
+    "Tea__brown_blight",
+    "Tea__healthy",
+    "Tea__red_leaf_spot",
+    "Tomato__bacterial_spot",
+    "Tomato__early_blight",
+    "Tomato__healthy",
+    "Tomato__late_blight",
+    "Tomato__leaf_mold",
+    "Tomato__mosaic_virus",
+    "Tomato__septoria_leaf_spot",
+    "Tomato__spider_mites_(two_spotted_spider_mite)",
+    "Tomato__target_spot",
+    "Tomato__yellow_leaf_curl_virus",
+    "Wheat__brown_rust",
+    "Wheat__healthy",
+    "Wheat__septoria",
+    "Wheat__yellow_rust",
+]
+model=None
 def load_disease_model():
+    global model
     try:
-        if os.path.exists(model_path):
-            ort_sess=ort.InferenceSession(model_path)
-            print(ort_sess)
-            return ort_sess
+        if os.path.exists(MODEL_PATH):
+            model = ort.InferenceSession(MODEL_PATH)
+            print(f"[disease_service] Model loaded from {MODEL_PATH}")
+            return model
+        else:
+            print(f"[disease_service] Model file not found at {MODEL_PATH}")
     except Exception as e:
-        print(f"Error loading model:{e}")
-        return None
-load_disease_model()
+        print(f"[disease_service] Error loading model: {e}")
+        model = None
 
 
-def disease_preduction():
+def preprocess_image(file_storage):
+    img_bytes = file_storage.read()
+    img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+    img = img.resize((224, 224), Image.Resampling.LANCZOS)
+    arr = np.array(img, dtype=np.float32) / 255.0
+    return np.expand_dims(arr, axis=0)  
+
+
+def format_label(raw_label):
+    return raw_label.replace("__", " — ").replace("_", " ").title()
+
+
+def predict_disease(file_storage):
     if model is None:
-        return
-    image=np.array(preprocessing)
-    try:
-        preduction=model.run(None,{image})[0]
-        preducted_index=np.argmax(preduction)
-        confidence=np.max(preduction)*100
-        return preduction,confidence,preducted_index
-    except Exception as e:
-        print(f"Error during prdiction :{e}")
         return None
+
+    try:
+        img_array = preprocess_image(file_storage)
+
+        input_name = model.get_inputs()[0].name
+        outputs = model.run(None, {input_name: img_array})
+
+        predictions = outputs[0]     
+        predicted_index = int(np.argmax(predictions))
+        confidence = float(np.max(predictions) * 100)
+
+        if predicted_index < len(CLASS_NAMES):
+            raw_label = CLASS_NAMES[predicted_index]
+        else:
+            raw_label = f"Unknown (index {predicted_index})"
+
+        disease_name = format_label(raw_label)
+
+        is_healthy = "healthy" in raw_label.lower()
+
+        if is_healthy:
+            treatment = "No disease detected. Your plant looks healthy! Keep up the good care."
+        else:
+            treatment = (
+                f"Disease detected: {disease_name}. "
+                "Please consult a local agricultural expert for specific treatment. "
+                "General recommendations: remove affected leaves, ensure proper spacing "
+                "for air circulation, and consider applying appropriate fungicides or pesticides."
+            )
+
+        return {
+            "disease_name": disease_name,
+            "confidence": round(confidence, 2),
+            "treatment": treatment,
+        }
+
+    except Exception as e:
+        print(f"[disease_service] Error during prediction: {e}")
+        return None
+
+load_disease_model()
