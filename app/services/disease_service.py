@@ -3,6 +3,7 @@ import os
 import numpy as np
 from PIL import Image
 import io
+from app.services.gemini_service import get_treatment_recommendation
 MODEL_PATH = "app/models/ensemble_model_final.onnx"
 
 CLASS_NAMES = [
@@ -148,12 +149,7 @@ def predict_disease(file_storage):
         if is_healthy:
             treatment = "No disease detected. Your plant looks healthy! Keep up the good care."
         else:
-            treatment = (
-                f"Disease detected: {disease_name}. "
-                "Please consult a local agricultural expert for specific treatment. "
-                "General recommendations: remove affected leaves, ensure proper spacing "
-                "for air circulation, and consider applying appropriate fungicides or pesticides."
-            )
+            treatment = get_treatment_recommendation(disease_name)
 
         return {
             "disease_name": disease_name,
