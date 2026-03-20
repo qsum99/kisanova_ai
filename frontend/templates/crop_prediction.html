@@ -437,7 +437,25 @@
     }
   });
 
-  loadCountries();
+  loadCountries().then(() => {
+    // Auto-fill location from logged-in farmer's session
+    if (window.FARMER_USER && window.FARMER_USER.country_code) {
+      const u = window.FARMER_USER;
+      countryEl.value = u.country_code;
+      countryEl.dispatchEvent(new Event('change'));
+      // Wait for states to populate, then set state
+      setTimeout(() => {
+        if (u.state_code) {
+          stateEl.value = u.state_code;
+          stateEl.dispatchEvent(new Event('change'));
+          // Wait for cities to load, then set city
+          setTimeout(() => {
+            if (u.city) { cityEl.value = u.city; }
+          }, 1500);
+        }
+      }, 500);
+    }
+  });
 
   /* ── pH slider ── */
   const phRange = document.getElementById('pH');

@@ -18,12 +18,12 @@ def fetch_and_store_prices() -> int:
     params = {
         "api-key": GOV_API_KEY,
         "format": "json",
-        "limit": 10
+        "limit": 2000
     }
     
     try:
         print(f"[market_price_service] Fetching data from {GOV_API_URL}")
-        response = requests.get(GOV_API_URL, params=params, timeout=15)
+        response = requests.get(GOV_API_URL, params=params, timeout=60)
         response.raise_for_status()
         data = response.json()
         
@@ -147,6 +147,34 @@ def get_latest_prices(state: str=None, commodity: str=None) -> List[Dict[str, An
         
     conn.close()
     print(result)
+    return result
+
+def get_top_crops(limit: int=30) -> List[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT commodity, 
+               ROUND(AVG(modal_price), 2) as avg_price,
+               ROUND(MAX(max_price), 2) as highest_price,
+               ROUND(MIN(min_price), 2) as lowest_price,
+               COUNT(*) as market_count
+        FROM crop_prices
+        GROUP BY commodity
+        ORDER BY avg_price DESC
+        LIMIT ?
+    ''', (limit,))
+    rows = cursor.fetchall()
+    result = []
+    for i, row in enumerate(rows):
+        result.append({
+            "rank": i + 1,
+            "commodity": row["commodity"],
+            "avg_price": row["avg_price"],
+            "highest_price": row["highest_price"],
+            "lowest_price": row["lowest_price"],
+            "market_count": row["market_count"]
+        })
+    conn.close()
     return result
 
 if __name__ == "__main__":

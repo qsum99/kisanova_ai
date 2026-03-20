@@ -1,16 +1,15 @@
 import sqlite3
 import os
+from werkzeug.security import generate_password_hash
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'market_prices.db')
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'farmer_ai.db')
 
 def get_db_connection():
-    """Returns a new connection to the SQLite database."""
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Returns rows as dictionary-like objects
+    conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
-    """Initializes the database schema."""
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -29,6 +28,38 @@ def init_db():
             last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS farmers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            phone TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            country TEXT,
+            country_code TEXT,
+            state TEXT,
+            state_code TEXT,
+            city TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admins (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL
+        )
+    ''')
+    
+    # Seed default admin if not exists
+    cursor.execute("SELECT id FROM admins WHERE username = 'admin'")
+    if not cursor.fetchone():
+        cursor.execute(
+            "INSERT INTO admins (username, password_hash) VALUES (?, ?)",
+            ('admin', generate_password_hash('admin1234'))
+        )
+        print("[Database] Default admin account created (admin / admin1234)")
     
     conn.commit()
     conn.close()

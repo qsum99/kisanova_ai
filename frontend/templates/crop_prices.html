@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}💰 Crop Prices – Farmer AI{% endblock %}
+{% block description %}View the latest market prices for crops across India. Filter by state or commodity.{% endblock %}
+{% block nav_prices %}active{% endblock %}
+
+{% block head %}
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-top: 20px;
+    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    background: linear-gradient(100deg, #fbbf24 0%, #f59e0b 50%, var(--green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .page-header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    align-items: flex-end;
+  }
+
+  .filter-bar .form-group {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .filter-bar label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .filter-bar input,
+  .filter-bar select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s;
+  }
+
+  .filter-bar input:focus,
+  .filter-bar select:focus {
+    outline: none;
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+  }
+
+  .btn-filter {
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.88rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    white-space: nowrap;
+  }
+
+  .btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.45);
+  }
+
+  .btn-sync {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.08);
+    color: var(--green);
+    font-weight: 700;
+    font-size: 0.82rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+  }
+
+  .btn-sync:hover {
+    background: rgba(74, 222, 128, 0.15);
+    border-color: var(--green);
+  }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .stat-chip .val {
+    color: #fbbf24;
+    font-weight: 800;
+  }
+
+  /* ── Price table ── */
+  .price-table-wrap {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .price-table thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+    white-space: nowrap;
+  }
+
+  .price-table tbody tr {
+    transition: background 0.15s;
+  }
+
+  .price-table tbody tr:hover {
+    background: rgba(251, 191, 36, 0.04);
+  }
+
+  .price-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .price-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .rank-badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .rank-1 { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+  .rank-2 { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+  .rank-3 { background: rgba(205, 127, 50, 0.2); color: #cd7f32; }
+  .rank-default { background: rgba(255,255,255,0.05); color: var(--dim); }
+
+  .commodity-name {
+    font-weight: 700;
+    color: #fbbf24;
+  }
+
+  .price-val {
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  /* ── Empty/loading states ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--dim);
+  }
+
+  .empty-state .icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .loading-row td {
+    text-align: center;
+    padding: 40px !important;
+    color: var(--dim);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 600px) {
+    .filter-bar { flex-direction: column; }
+    .filter-bar .form-group { min-width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 960px;">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>💰 Crop Price Leaderboard</h1>
+    <p>Live market prices from government data. Filter by state or commodity to find the best rates near you.</p>
+  </div>
+
+  <!-- Card -->
+  <div class="glass-card">
+
+    <!-- Filters -->
+    <div class="section-label">🔍 Filter Prices</div>
+    <div class="filter-bar">
+      <div class="form-group">
+        <label>📍 State</label>
+        <input type="text" id="filter-state" placeholder="e.g. Karnataka" />
+      </div>
+      <div class="form-group">
+        <label>🌾 Commodity</label>
+        <input type="text" id="filter-commodity" placeholder="e.g. Rice" />
+      </div>
+      <button class="btn-filter" id="search-btn" onclick="loadPrices()">
+        🔍 Search
+      </button>
+      <button class="btn-sync" id="sync-btn" onclick="syncPrices()">
+        🔄 Refresh Data
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-chip">📊 Results: <span class="val" id="stat-count">—</span></div>
+      <div class="stat-chip">🕐 Last updated: <span class="val" id="stat-updated">—</span></div>
+    </div>
+
+    <!-- Table -->
+    <div class="price-table-wrap">
+      <table class="price-table" id="price-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Commodity</th>
+            <th>Variety</th>
+            <th>State</th>
+            <th>District</th>
+            <th>Market</th>
+            <th>Min ₹</th>
+            <th>Max ₹</th>
+            <th>Modal ₹</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="price-tbody">
+          <tr class="loading-row">
+            <td colspan="10">Loading prices...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty state (hidden by default) -->
+    <div class="empty-state" id="empty-state" style="display:none;">
+      <span class="icon">📭</span>
+      <div>No price records found. Try a different filter or click <strong>Refresh Data</strong>.</div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box">
+      <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+      <span id="error-msg"></span>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const tbody = document.getElementById('price-tbody');
+  const tableWrap = document.querySelector('.price-table-wrap');
+  const emptyState = document.getElementById('empty-state');
+  const errorBox = document.getElementById('error-box');
+  const statCount = document.getElementById('stat-count');
+  const statUpdated = document.getElementById('stat-updated');
+  const syncBtn = document.getElementById('sync-btn');
+
+  function getRankClass(i) {
+    if (i === 0) return 'rank-1';
+    if (i === 1) return 'rank-2';
+    if (i === 2) return 'rank-3';
+    return 'rank-default';
+  }
+
+  function formatPrice(val) {
+    return Number(val).toLocaleString('en-IN');
+  }
+
+  function showError(msg) {
+    errorBox.style.display = 'flex';
+    document.getElementById('error-msg').textContent = msg;
+  }
+
+  async function loadPrices() {
+    errorBox.style.display = 'none';
+    emptyState.style.display = 'none';
+    tableWrap.style.display = 'block';
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="10">Loading prices...</td></tr>';
+
+    const state = document.getElementById('filter-state').value.trim();
+    const commodity = document.getElementById('filter-commodity').value.trim();
+
+    let url = '/api/prices?';
+    if (state) url += 'state=' + encodeURIComponent(state) + '&';
+    if (commodity) url += 'commodity=' + encodeURIComponent(commodity);
+
+    try {
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        showError(json.error || 'Failed to fetch prices.');
+        tbody.innerHTML = '';
+        return;
+      }
+
+      const data = json.data;
+      statCount.textContent = json.count;
+
+      if (data.length > 0 && data[0].last_updated) {
+        statUpdated.textContent = data[0].last_updated;
+      }
+
+      // If DB is empty and no filters, auto-sync from gov API
+      if (data.length === 0 && !state && !commodity) {
+        tbody.innerHTML = '<tr class="loading-row"><td colspan="10">No data yet — fetching from government API...</td></tr>';
+        await syncPrices();
+        return;
+      }
+
+      if (data.length === 0) {
+        tableWrap.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      tbody.innerHTML = data.map((row, i) => `
+        <tr>
+          <td><span class="rank-badge ${getRankClass(i)}">${i + 1}</span></td>
+          <td class="commodity-name">${row.commodity}</td>
+          <td>${row.variety}</td>
+          <td>${row.state}</td>
+          <td>${row.district}</td>
+          <td>${row.market}</td>
+          <td>₹${formatPrice(row.min_price)}</td>
+          <td>₹${formatPrice(row.max_price)}</td>
+          <td class="price-val">₹${formatPrice(row.modal_price)}</td>
+          <td>${row.arrival_date}</td>
+        </tr>
+      `).join('');
+
+    } catch (err) {
+      showError('Could not reach the server. Make sure the Flask app is running.');
+    }
+  }
+
+  async function syncPrices() {
+    syncBtn.disabled = true;
+    syncBtn.textContent = '⏳ Syncing...';
+    errorBox.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/prices/sync', { method: 'POST' });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        showError(json.error || 'Sync failed.');
+      } else {
+        loadPrices();
+      }
+    } catch (err) {
+      showError('Could not reach the server.');
+    } finally {
+      syncBtn.disabled = false;
+      syncBtn.textContent = '🔄 Refresh Data';
+    }
+  }
+
+  // Auto-fill state from logged-in farmer's session
+  if (window.FARMER_USER && window.FARMER_USER.state) {
+    document.getElementById('filter-state').value = window.FARMER_USER.state;
+  }
+
+  // Load prices on page load
+  loadPrices();
+</script>
+{% endblock %}

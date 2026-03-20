@@ -12,6 +12,9 @@ def create_app():
     
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
     
+    # Secret key for session management
+    app.secret_key = os.environ.get('SECRET_KEY', 'farmer-ai-dev-secret-key-2026')
+    
     # Load configuration
     from app import config
     app.config.from_mapping(
@@ -29,9 +32,11 @@ def create_app():
         from app.routes.crop_routes import crop_routes
         from app.routes.disease_routes import disease_routes
         from app.routes.price_routes import price_routes
+        from app.routes.auth_routes import auth_routes
         app.register_blueprint(crop_routes, url_prefix='/api')
         app.register_blueprint(disease_routes, url_prefix='/api')
         app.register_blueprint(price_routes, url_prefix='/api')
+        app.register_blueprint(auth_routes, url_prefix='/api')
     
     # Simple health check endpoint
     @app.route('/health')

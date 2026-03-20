@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}📝 Register – Farmer AI{% endblock %}
+{% block description %}Create your Farmer AI account. Save your location once and access personalized recommendations.{% endblock %}
+
+{% block head %}
+<style>
+  .auth-container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding-top: 30px;
+    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .auth-header .icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(100deg, var(--green) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .auth-header p {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 28px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: var(--dim);
+    background: var(--surface);
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .auth-tab.active {
+    background: rgba(74, 222, 128, 0.1);
+    color: var(--green);
+  }
+
+  .auth-tab:hover:not(.active) {
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 500px) { .grid-2 { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+
+  <div class="auth-header">
+    <span class="icon">🌱</span>
+    <h1>Create Account</h1>
+    <p>Register once — your location is saved and reused across all pages</p>
+  </div>
+
+  <div class="auth-tabs">
+    <a href="/login" class="auth-tab">🔑 Login</a>
+    <a href="/register" class="auth-tab active">📝 Register</a>
+  </div>
+
+  <div class="glass-card">
+    <form id="register-form" autocomplete="off">
+
+      <div class="section-label">👤 Personal Info</div>
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="form-group">
+          <label><i class="bi bi-person me-1"></i> Full Name</label>
+          <input type="text" id="reg-name" placeholder="e.g. Ramesh Kumar" required />
+        </div>
+        <div class="form-group">
+          <label><i class="bi bi-phone me-1"></i> Phone Number</label>
+          <input type="tel" id="reg-phone" placeholder="e.g. 9876543210"
+                 maxlength="10" pattern="[0-9]{10}"
+                 oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+                 required />
+          <span class="hint">10 digit mobile number</span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:24px;">
+        <label><i class="bi bi-lock me-1"></i> Password</label>
+        <div style="position:relative;">
+          <input type="password" id="reg-password" placeholder="Create a password" style="padding-right:44px;" required />
+          <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;padding:0;transition:color 0.2s;" onclick="togglePwdVis('reg-password', this)">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="section-label">📍 Your Location</div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>🌍 Country</label>
+        <select id="reg-country" required>
+          <option value="" disabled selected>Loading...</option>
+        </select>
+      </div>
+      <div class="grid-2" style="margin-bottom:24px;">
+        <div class="form-group">
+          <label>🗺️ State / Region</label>
+          <select id="reg-state" required disabled>
+            <option value="" disabled selected>Select country first</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>🏙️ City</label>
+          <select id="reg-city" required disabled>
+            <option value="" disabled selected>Select state first</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-farmer" id="reg-btn">
+        <div class="spinner" id="reg-spinner"></div>
+        <span id="reg-btn-text">🌱  Create Account</span>
+      </button>
+    </form>
+
+    <div class="error-box" id="error-box">
+      <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+      <span id="error-msg"></span>
+    </div>
+
+    <div style="text-align:center;margin-top:18px;">
+      <a href="/login" style="color:var(--green);font-weight:700;font-size:0.9rem;text-decoration:none;">
+        Already have an account? Login here →
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const countryEl = document.getElementById('reg-country');
+  const stateEl = document.getElementById('reg-state');
+  const cityEl = document.getElementById('reg-city');
+  const errorBox = document.getElementById('error-box');
+
+  function showError(msg) {
+    errorBox.style.display = 'flex';
+    document.getElementById('error-msg').textContent = msg;
+  }
+
+  function normalizeName(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function togglePwdVis(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'bi bi-eye-slash';
+    } else {
+      input.type = 'password';
+      icon.className = 'bi bi-eye';
+    }
+  }
+
+  let countriesData = [];
+
+  async function loadCountries() {
+    try {
+      const res = await fetch('https://countriesnow.space/api/v0.1/countries/states');
+      const json = await res.json();
+      countriesData = json.data;
+      countryEl.innerHTML = '<option value="" disabled selected>Select country</option>' +
+        countriesData.map(c => `<option value="${c.iso2}" data-name="${c.name}">${c.name}</option>`).join('');
+    } catch (err) {
+      countryEl.innerHTML = '<option value="" disabled>Error loading countries</option>';
+    }
+  }
+
+  countryEl.addEventListener('change', () => {
+    const selectedIso2 = countryEl.value;
+    const countryObj = countriesData.find(c => c.iso2 === selectedIso2);
+    const states = countryObj ? countryObj.states : [];
+    stateEl.innerHTML = '<option value="" disabled selected>Select state</option>' +
+      states.map(s => `<option value="${s.state_code}" data-name="${s.name}">${s.name}</option>`).join('');
+    stateEl.disabled = states.length === 0;
+    cityEl.innerHTML = '<option value="" disabled selected>Select state first</option>';
+    cityEl.disabled = true;
+  });
+
+  stateEl.addEventListener('change', async () => {
+    const countryName = countryEl.options[countryEl.selectedIndex].getAttribute('data-name');
+    const stateName = stateEl.options[stateEl.selectedIndex].getAttribute('data-name');
+    cityEl.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
+    cityEl.disabled = true;
+    try {
+      const res = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: countryName, state: stateName })
+      });
+      const json = await res.json();
+      const cities = json.data || [];
+      cityEl.innerHTML = cities.length
+        ? '<option value="" disabled selected>Select city</option>' + cities.map(city => { const n = normalizeName(city); return `<option value="${n}">${n}</option>`; }).join('')
+        : '<option value="" disabled>No cities available</option>';
+      cityEl.disabled = cities.length === 0;
+    } catch (err) {
+      cityEl.innerHTML = '<option value="" disabled>Error loading cities</option>';
+    }
+  });
+
+  loadCountries();
+
+  /* ── Submit ── */
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+
+    const name = document.getElementById('reg-name').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const country_code = countryEl.value;
+    const country = countryEl.options[countryEl.selectedIndex]?.getAttribute('data-name') || '';
+    const state_code = stateEl.value;
+    const state = stateEl.options[stateEl.selectedIndex]?.getAttribute('data-name') || '';
+    const city = cityEl.value;
+
+    if (!name || !phone || !password || !country || !state || !city) {
+      showError('Please fill in all fields.');
+      return;
+    }
+    if (phone.length !== 10) {
+      showError('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true;
+    document.getElementById('reg-spinner').style.display = 'block';
+    document.getElementById('reg-btn-text').textContent = 'Creating account...';
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name, phone, password, country, country_code, state, state_code, city })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Registration failed.');
+      } else {
+        window.location.href = '/';
+      }
+    } catch (err) {
+      showError('Could not reach the server.');
+    } finally {
+      btn.disabled = false;
+      document.getElementById('reg-spinner').style.display = 'none';
+      document.getElementById('reg-btn-text').textContent = '🌱  Create Account';
+    }
+  });
+</script>
+{% endblock %}
