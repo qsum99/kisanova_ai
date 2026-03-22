@@ -29,10 +29,12 @@ def get_robust_weather(city_name: str, state_name: str) -> Dict[str, float]:
         
         temp = weather.get("temperature", FALLBACK_TEMP)
         humidity = weather.get("humidity", FALLBACK_HUMIDITY)
-        daily_rainfall = weather.get("rainfall_5day_total", FALLBACK_RAINFALL / 365.0)
+        # Use an empirically sensible scaling factor representing the average effective 
+        # rainy/monsoon days per year in India (approx 40-50 days of concentrated rain)
+        daily_rainfall = weather.get("rainfall_5day_total", FALLBACK_RAINFALL / 40.0)
         
-        # Simulate annual rainfall based on the daily data as requested
-        annual_rainfall = daily_rainfall * 365.0
+        # Simulate annual rainfall (e.g. 30mm/day * 40 rainy days = 1200mm average)
+        annual_rainfall = daily_rainfall * 40.0
         
         # Ensure values aren't mathematically impossible or zero where it hurts
         if temp < -20 or temp > 60: temp = FALLBACK_TEMP

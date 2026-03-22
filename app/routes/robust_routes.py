@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 
 from app.engines.soil_engine import infer_soil_data
 from app.engines.weather_engine import get_robust_weather
-from app.engines.icar_rule_engine import apply_icar_filters
+from app.engines.icar_rule_engine import apply_icar_filters, filter_by_geography
 from app.engines.ml_yield_engine import get_yield_ranking
 from app.engines.profit_engine import calculate_profitable_crops
 
@@ -27,6 +27,8 @@ def predict_robust_crop():
             
         state = data.get("state", "")
         district = data.get("city_or_district", "")
+        season = data.get("season", "Whole Year")
+        soil_type = data.get("soil_type", "")
         n = data.get("n")
         p = data.get("p")
         k = data.get("k")
@@ -36,7 +38,8 @@ def predict_robust_crop():
         soil_data = infer_soil_data(
             state=state,
             district=district,
-            n=n, p=p, k=k, ph=ph
+            n=n, p=p, k=k, ph=ph,
+            soil_type=soil_type if soil_type else None
         )
         
         # 2. WEATHER ENGINE
@@ -57,12 +60,21 @@ def predict_robust_crop():
         if not feasible_crops:
             feasible_crops = KNOWN_CROPS
             
+        # 3.5. GEOGRAPHY OVERRIDE
+        # Prevent geographically impossible crops (like coffee in a random hot district)
+        feasible_crops = filter_by_geography(
+            feasible_crops=feasible_crops,
+            state=state,
+            district=district
+        )
+            
         # 4. ML YIELD ENGINE
         # The new yield model takes the state, rainfall, and crops to predict exact yield
         feasible_scores = get_yield_ranking(
             feasible_crops=feasible_crops,
             state=state,
-            rainfall=weather_data["rainfall"]
+            rainfall=weather_data["rainfall"],
+            season=season
         )
 
         # 5. PROFIT ENGINE

@@ -1,19 +1,15 @@
 from typing import List, Tuple, Dict, Any
-from app.services.market_price_service import get_latest_prices
+from app.services.market_price_service import get_latest_prices, CROP_ALIASES
 
 def calculate_profitable_crops(crop_yields: List[Tuple[str, float]]) -> List[Dict[str, Any]]:
-    """
-    Combines the ML predicted yield with real market prices.
-    Returns the final ranked list of crops optimized for Profit (Revenue/Ha).
-    """
-    # 1. Fetch current market prices
+
     market_data = get_latest_prices()
     
     price_map = {}
     for entry in market_data:
         crop_name = str(entry.get("commodity", "")).lower().strip()
         price = float(entry.get("modal_price", 0.0))
-        # Since state/district might give multiple entries per crop, we'll keep the highest or average
+        
         if crop_name in price_map:
             price_map[crop_name] = max(price_map[crop_name], price)
         else:
@@ -28,13 +24,20 @@ def calculate_profitable_crops(crop_yields: List[Tuple[str, float]]) -> List[Dic
     for crop, predicted_yield in crop_yields:
         crop_clean = crop.lower().strip()
         
-        # If model yield is 0, skip
+        
         if predicted_yield <= 0:
             continue
             
-        market_price = price_map.get(crop_clean, avg_price)
+        market_price = avg_price
+        aliases = CROP_ALIASES.get(crop_clean, [crop_clean])
+        for alias in aliases:
+            matches = [price for key, price in price_map.items() if alias in key.lower()]
+            if matches:
+                # Average if multiple variants match (e.g. Rice(Common) and Rice(Grade A))
+                market_price = sum(matches) / len(matches)
+                break
         
-        # Revenue/Profit Score = Expected Yield * Expected Price
+        
         profit_score = predicted_yield * market_price
         
         final_rankings.append({
@@ -44,7 +47,8 @@ def calculate_profitable_crops(crop_yields: List[Tuple[str, float]]) -> List[Dic
             "profitability_index": round(profit_score, 2)
         })
         
-    # Sort purely by profitability index descending
+   
+   
     final_rankings.sort(key=lambda x: x["profitability_index"], reverse=True)
     
     return final_rankings

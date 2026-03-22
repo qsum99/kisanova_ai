@@ -10,15 +10,45 @@ from app.utils.database import get_db_connection
 
 GOV_API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
 
-def fetch_and_store_prices() -> int:
+CROP_ALIASES = {
+    "rice": ["rice", "paddy", "dhan"],
+    "cotton": ["cotton", "kapas"],
+    "maize": ["maize", "makka", "corn"],
+    "mungbean": ["green gram", "moong", "mung"],
+    "blackgram": ["black gram", "urad"],
+    "lentil": ["lentil", "masur", "masoor"],
+    "chickpea": ["chana", "gram", "chickpea", "bengal gram"],
+    "kidneybeans": ["rajma", "kidney bean"],
+    "pigeonpeas": ["tur", "arhar", "red gram", "pigeon"],
+    "mothbeans": ["moth", "dew gram"],
+    "pomegranate": ["pomegranate", "anar"],
+    "banana": ["banana", "kele"],
+    "mango": ["mango", "aam"],
+    "grapes": ["grapes", "angoor"],
+    "watermelon": ["watermelon", "tarbuj"],
+    "muskmelon": ["muskmelon", "kharbuja"],
+    "apple": ["apple", "seb"],
+    "orange": ["orange", "santra"],
+    "papaya": ["papaya", "papita"],
+    "coconut": ["coconut", "nariyal"],
+    "jute": ["jute"],
+    "coffee": ["coffee"]
+}
+
+def fetch_and_store_prices(state_filter: str = None) -> int:
     if not GOV_API_KEY:
         raise ValueError("GOV_API_KEY is not configured in .env.")
         
     params = {
         "api-key": GOV_API_KEY,
         "format": "json",
-        "limit": 10
     }
+    
+    if state_filter:
+        params["filters[state]"] = state_filter
+        params["limit"] = 2000 # Max for specific states
+    else:
+        params["limit"] = 10000
     
     try:
         print(f"[market_price_service] Fetching data from {GOV_API_URL}")
@@ -33,7 +63,10 @@ def fetch_and_store_prices() -> int:
             
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM crop_prices")
+        
+        # Only wipe the database if we are pulling a global snapshot
+        if not state_filter:
+            cursor.execute("DELETE FROM crop_prices")
         
         insert_query = '''
             INSERT INTO crop_prices 
@@ -121,13 +154,30 @@ def get_latest_prices(state: str=None, commodity: str=None) -> List[Dict[str, An
         query += " AND state LIKE ?"
         params.append(f"%{state}%")
     if commodity:
-        query += " AND commodity LIKE ?"
-        params.append(f"%{commodity}%")
+        c_clean = str(commodity).lower().strip()
+        aliases = CROP_ALIASES.get(c_clean, [c_clean])
+        
+        like_clauses = ["commodity LIKE ?"] * len(aliases)
+        query += f" AND ({' OR '.join(like_clauses)})"
+        for alias in aliases:
+            params.append(f"%{alias}%")
+            
     query += " ORDER BY modal_price DESC LIMIT 100"
     
     cursor.execute(query, params)
     rows = cursor.fetchall()
     
+    # [Dynamic State Caching] If we pulled less than 20 rows dynamically for a specific state,
+    # let's trigger an on-the-fly fetch strictly for that State!
+    if state and len(rows) < 20:
+        try:
+            print(f"[market_price_service] Auto-expanding cache for state: {state}")
+            fetch_and_store_prices(state_filter=state)
+            cursor.execute(query, params) # Re-run query after populating
+            rows = cursor.fetchall()
+        except Exception as e:
+            print(f"[market_price_service] Dynamic cache expansion failed: {e}")
+            
     result = []
     for row in rows:
         result.append({

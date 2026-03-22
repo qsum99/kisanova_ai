@@ -3,6 +3,16 @@ from typing import Dict, Any, Tuple
 # Comprehensive Regional averages for Indian Soils based on geographical soil types
 # Data reflects general available N (kg/ha equivalent proxy), P, K, and pH.
 # Values represent (N, P, K, pH)
+
+SOIL_TYPE_DEFAULTS = {
+    "alluvial": (40.0, 40.0, 40.0, 7.0),
+    "black": (20.0, 30.0, 50.0, 7.8),
+    "red": (20.0, 20.0, 20.0, 6.0),
+    "laterite": (15.0, 15.0, 15.0, 5.5),
+    "desert": (10.0, 15.0, 20.0, 8.0),
+    "mountain": (30.0, 20.0, 30.0, 6.0)
+}
+
 REGIONAL_SOIL_DEFAULTS = {
     # Northern States (Alluvial & Mountainous)
     "Punjab": (40.0, 40.0, 40.0, 7.5),
@@ -56,22 +66,29 @@ REGIONAL_SOIL_DEFAULTS = {
 # National Average Fallback (Represents overall Indian soil health which is generally low in N and P)
 NATIONAL_DEFAULT = (25.0, 25.0, 35.0, 6.8)
 
-def infer_soil_data(state: str, district: str, n: float = None, p: float = None, k: float = None, ph: float = None) -> Dict[str, float]:
+def infer_soil_data(state: str, district: str, n: float = None, p: float = None, k: float = None, ph: float = None, soil_type: str = None) -> Dict[str, float]:
     """
-    Infers missing soil data (N, P, K, pH) using regional averages if not provided.
-    This ensures that farms without solid soil testing data still receive a reliable projection.
+    Infers missing soil data (N, P, K, pH) using direct soil type if provided,
+    otherwise falls back to regional averages.
+    This replaces pure guesswork with firmer scientific defaults when the farmer specifies soil type.
     """
-    state_normalized = state.title() if state else ""
     
-    # Try finding an exact or partial match in states
-    matched_state = None
-    for s in REGIONAL_SOIL_DEFAULTS.keys():
-        if s.lower() in state_normalized.lower():
-            matched_state = s
-            break
-            
-    # Get regional default or national default
-    default_n, default_p, default_k, default_ph = REGIONAL_SOIL_DEFAULTS.get(matched_state, NATIONAL_DEFAULT)
+    # 1. If exact soil type is given, prioritize its scientific baseline over State geography
+    if soil_type and soil_type.lower() in SOIL_TYPE_DEFAULTS:
+        default_n, default_p, default_k, default_ph = SOIL_TYPE_DEFAULTS[soil_type.lower()]
+    else:
+        # 2. Fall back to state-based geographical averages
+        state_normalized = state.title() if state else ""
+        
+        # Try finding an exact or partial match in states
+        matched_state = None
+        for s in REGIONAL_SOIL_DEFAULTS.keys():
+            if s.lower() in state_normalized.lower():
+                matched_state = s
+                break
+                
+        # Get regional default or national default
+        default_n, default_p, default_k, default_ph = REGIONAL_SOIL_DEFAULTS.get(matched_state, NATIONAL_DEFAULT)
     
     # Fill in missing values
     inferred_n = float(n) if n not in [None, "", 0, "0"] else default_n

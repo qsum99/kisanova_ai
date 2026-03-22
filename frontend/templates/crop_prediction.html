@@ -111,6 +111,7 @@
 
   input[type="range"] {
     -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     height: 5px;
     background: rgba(255, 255, 255, 0.1);
@@ -213,6 +214,23 @@
   .w-icon { font-size: 1.3rem; margin-bottom: 4px; }
   .w-label { font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
   .w-val { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 3px; }
+  .w-label { font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  .w-val { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 3px; }
+
+  /* ── Tabs ── */
+  .nav-tabs { border-bottom: 2px solid rgba(255,255,255,0.1); margin-bottom: 25px; }
+  .nav-tabs .nav-link { color: var(--muted); font-weight: 600; border: none; padding: 10px 20px; transition: 0.3s; background: transparent; }
+  .nav-tabs .nav-link:hover { color: var(--text); }
+  .nav-tabs .nav-link.active { color: var(--green); border-bottom: 2px solid var(--green); background: rgba(74, 222, 128, 0.1); border-radius: 8px 8px 0 0; }
+  
+  /* ── Robust Result Cards ── */
+  .robust-result-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); margin-top: 28px; }
+  .robust-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; text-align: center; transition: all 0.3s; }
+  .robust-card:hover { border-color: rgba(74, 222, 128, 0.4); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(74, 222, 128, 0.15); }
+  .r-emoji { font-size: 2.2rem; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+  .r-name { font-size: 1.1rem; font-weight: 700; color: var(--green); margin-bottom: 5px; }
+  .r-metric { font-size: 0.75rem; color: var(--dim); margin-bottom: 2px; }
+  .r-val { font-size: 0.9rem; font-weight: 600; color: var(--text); }
 </style>
 {% endblock %}
 
@@ -243,9 +261,23 @@
     </div>
   </div>
 
-  <!-- Card -->
-  <div class="glass-card">
-    <form id="predict-form" autocomplete="off">
+  <!-- Nav Tabs -->
+  <ul class="nav nav-tabs justify-content-center" id="predictionTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="precise-tab" data-bs-toggle="tab" data-bs-target="#precise-mode" type="button" role="tab" aria-controls="precise-mode" aria-selected="true">🔬 With Soil Data</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="robust-tab" data-bs-toggle="tab" data-bs-target="#robust-mode" type="button" role="tab" aria-controls="robust-mode" aria-selected="false">🌍 Without Soil Data</button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content" id="predictionTabsContent">
+    
+    <!-- Tab 1: Precise Mode -->
+    <div class="tab-pane fade show active" id="precise-mode" role="tabpanel" aria-labelledby="precise-tab">
+      <div class="glass-card">
+        <form id="predict-form" autocomplete="off">
 
       <!-- Soil Nutrients -->
       <div class="section-label">🧪 Soil Nutrients (kg/ha)</div>
@@ -348,12 +380,103 @@
       </div>
     </div>
 
-    <!-- Error -->
-    <div class="error-box" id="error-box">
-      <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
-      <span id="error-msg"></span>
-    </div>
-  </div>
+      <!-- Error -->
+      <div class="error-box" id="error-box">
+        <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+        <span id="error-msg"></span>
+      </div>
+    </div> <!-- End Tab 1 Glass Card -->
+  </div> <!-- End Tab 1 -->
+
+  <!-- Tab 2: Robust Mode -->
+  <div class="tab-pane fade" id="robust-mode" role="tabpanel" aria-labelledby="robust-tab">
+    <div class="glass-card">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="font-size: 1.2rem; color: var(--cyan); font-weight: 700;">Simple Prediction</h3>
+        <p style="font-size: 0.85rem; color: var(--muted);">No soil test? No problem. We'll cross-reference your location with our AI soil maps, meteorological data, and crop yield models to find the most profitable crops for you.</p>
+      </div>
+      
+      <form id="robust-predict-form" autocomplete="off">
+        <div class="section-label">📍 Farm Location</div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 form-group">
+            <label>🗺️ State / Region</label>
+            <input type="text" id="robust-state" class="form-control" placeholder="e.g. Maharashtra" required />
+          </div>
+          <div class="col-md-6 form-group">
+            <label>🏙️ District / City</label>
+            <input type="text" id="robust-city" class="form-control" placeholder="e.g. Pune" required />
+          </div>
+        </div>
+        
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 form-group">
+            <label>🌦️ Season</label>
+            <select id="robust-season" class="form-select" required>
+              <option value="Whole Year" selected>Whole Year (General)</option>
+              <option value="Kharif">Kharif (Monsoon: Jun - Oct)</option>
+              <option value="Rabi">Rabi (Winter: Oct - Mar)</option>
+              <option value="Summer">Summer (Zaid: Mar - Jun)</option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group">
+            <label>🧱 Soil Type</label>
+            <select id="robust-soil" class="form-select" required>
+              <option value="" disabled selected>Select Soil Type</option>
+              <option value="alluvial">Alluvial Soil</option>
+              <option value="black">Black Soil (Regur)</option>
+              <option value="red">Red Soil</option>
+              <option value="laterite">Laterite Soil</option>
+              <option value="desert">Desert / Arid Soil</option>
+              <option value="mountain">Mountain / Forest Soil</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" id="robust-submit-btn" class="btn-farmer">
+          <div class="spinner" id="robust-spinner" style="display:none;"></div>
+          <span id="robust-btn-text">🚀 &nbsp;Find Profitable Crops</span>
+        </button>
+      </form>
+
+      <!-- Robust Result View -->
+      <div id="robust-result-container" style="display: none; margin-top:28px;">
+         <h4 style="font-size: 1rem; color: var(--green); text-align: center; margin-bottom: 15px;">🏆 Top Recommended Crops</h4>
+         <p style="font-size: 0.75rem; color: var(--dim); text-align: center;" id="robust-meta"></p>
+         
+         <!-- Weather Strip for Robust Mode -->
+         <div class="weather-strip" style="margin-bottom: 20px; border-radius: 20px; background: rgba(0,0,0,0.2);">
+           <div class="w-item">
+             <div class="w-icon">🌡️</div>
+             <div class="w-label">Temperature</div>
+             <div class="w-val" id="r-w-temp">—</div>
+           </div>
+           <div class="w-item">
+             <div class="w-icon">💧</div>
+             <div class="w-label">Humidity</div>
+             <div class="w-val" id="r-w-humidity">—</div>
+           </div>
+           <div class="w-item">
+             <div class="w-icon">🌧️</div>
+             <div class="w-label">Rainfall (Est)</div>
+             <div class="w-val" id="r-w-rain">—</div>
+           </div>
+         </div>
+
+         <div class="robust-result-grid" id="robust-grid">
+             <!-- Populated dynamically via JS -->
+         </div>
+      </div>
+      
+      <!-- Error View -->
+      <div class="error-box" id="robust-error-box" style="display:none; margin-top:20px;">
+        <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+        <span id="robust-error-msg"></span>
+      </div>
+    </div> <!-- End Tab 2 Glass Card -->
+  </div> <!-- End Tab 2 -->
+
+  </div> <!-- End Tab Content Container -->
 
 </div>
 {% endblock %}
@@ -366,9 +489,9 @@
     cotton: "🌿", sugarcane: "🎋", jute: "🌿", coffee: "☕",
     banana: "🍌", mango: "🥭", grapes: "🍇", apple: "🍎",
     orange: "🍊", watermelon: "🍉", pomegranate: "🍎", papaya: "🍈",
-    coconut: "🥥", muskmelon: "🍈", chickpea: "🫘", lentil: "🫘",
-    kidneybeans: "🫘", blackgram: "🫘", mothbeans: "🫘", mungbean: "🫘",
-    pigeonpeas: "🫘", default: "🌱",
+    coconut: "🥥", muskmelon: "🍈", chickpea: "🟡", lentil: "🟠",
+    kidneybeans: "🫘", blackgram: "⚫", mothbeans: "🟤", mungbean: "🟢",
+    pigeonpeas: "🥣", default: "🌱",
   };
 
   function getCropEmoji(crop) {
@@ -454,6 +577,17 @@
           }, 1500);
         }
       }, 500);
+      
+      // Auto-fill for Tab 2 (Robust)
+      const robustState = document.getElementById('robust-state');
+      if(robustState) {
+          // If the selected state has a readable name from the dropdown, try using it, otherwise fallback to code or known profile data
+          robustState.value = u.state || u.state_code || '';
+      }
+      const robustCity = document.getElementById('robust-city');
+      if(robustCity && u.city) {
+          robustCity.value = u.city;
+      }
     }
   });
 
@@ -553,5 +687,87 @@
       setLoading(false);
     }
   });
+
+  /* ── Robust Form Logic ── */
+  const robustForm = document.getElementById('robust-predict-form');
+  const rBtn = document.getElementById('robust-submit-btn');
+  const rSpinner = document.getElementById('robust-spinner');
+  const rBtnText = document.getElementById('robust-btn-text');
+  const rResultBox = document.getElementById('robust-result-container');
+  const rErrorBox = document.getElementById('robust-error-box');
+  const rMeta = document.getElementById('robust-meta');
+  const rGrid = document.getElementById('robust-grid');
+
+  function setRobustLoading(on) {
+    rBtn.disabled = on;
+    rSpinner.style.display = on ? 'inline-block' : 'none';
+    rBtnText.textContent = on ? 'Analyzing data…' : '🚀  Find Profitable Crops';
+  }
+
+  if(robustForm) {
+    robustForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      rErrorBox.style.display = 'none';
+      rResultBox.style.display = 'none';
+      setRobustLoading(true);
+
+      const payload = {
+        state: document.getElementById('robust-state').value.trim(),
+        city_or_district: document.getElementById('robust-city').value.trim(),
+        season: document.getElementById('robust-season').value,
+        soil_type: document.getElementById('robust-soil').value
+      };
+
+      try {
+        const res = await fetch('/api/predict/robust', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          rErrorBox.style.display = 'flex';
+          document.getElementById('robust-error-msg').textContent = data.error || 'An unexpected error occurred.';
+        } else {
+          rResultBox.style.display = 'block';
+          
+          let metaHtml = `Inferred Soil Data: ${data.orchestration_metadata.inferred_soil ? 'Yes ✅' : 'No ❌'} | Validated Crops Analyzed: ${data.orchestration_metadata.feasible_crops_count}`;
+          rMeta.textContent = metaHtml;
+          
+          // Populate Weather
+          if (data.parameters_used && data.parameters_used.weather) {
+            document.getElementById('r-w-temp').textContent = data.parameters_used.weather.temperature.toFixed(1) + ' °C';
+            document.getElementById('r-w-humidity').textContent = data.parameters_used.weather.humidity.toFixed(1) + ' %';
+            document.getElementById('r-w-rain').textContent = data.parameters_used.weather.rainfall.toFixed(1) + ' mm';
+          }
+          
+          const topProfit = data.recommendations.length > 0 ? data.recommendations[0].profitability_index : 1;
+          
+          rGrid.innerHTML = data.recommendations.map((item, idx) => {
+            const conf = Math.max(40, Math.round((item.profitability_index / topProfit) * 98));
+            return `
+            <div class="robust-card">
+              <div class="r-emoji">${getCropEmoji(item.crop)}</div>
+              <div class="r-name">#${idx+1} ${item.crop}</div>
+              <div class="r-metric">AI Confidence</div>
+              <div class="r-val" style="color:var(--cyan)">${conf}% Match</div>
+              <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+              <div class="r-metric">Projected Yield</div>
+              <div class="r-val">${item.predicted_yield} Qt/Ha</div>
+              <div class="r-metric" style="margin-top:4px;">Est. Profit</div>
+              <div class="r-val" style="color:var(--green)">₹${item.profitability_index.toLocaleString("en-IN")}</div>
+            </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        rErrorBox.style.display = 'flex';
+        document.getElementById('robust-error-msg').textContent = 'Could not reach the server. Make sure the API is running.';
+      } finally {
+        setRobustLoading(false);
+      }
+    });
+  }
 </script>
 {% endblock %}
