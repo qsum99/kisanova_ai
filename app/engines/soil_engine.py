@@ -67,11 +67,7 @@ REGIONAL_SOIL_DEFAULTS = {
 NATIONAL_DEFAULT = (25.0, 25.0, 35.0, 6.8)
 
 def infer_soil_data(state: str, district: str, n: float = None, p: float = None, k: float = None, ph: float = None, soil_type: str = None) -> Dict[str, float]:
-    """
-    Infers missing soil data (N, P, K, pH) using direct soil type if provided,
-    otherwise falls back to regional averages.
-    This replaces pure guesswork with firmer scientific defaults when the farmer specifies soil type.
-    """
+    
     
     # 1. If exact soil type is given, prioritize its scientific baseline over State geography
     if soil_type and soil_type.lower() in SOIL_TYPE_DEFAULTS:

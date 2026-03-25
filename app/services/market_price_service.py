@@ -52,7 +52,7 @@ def fetch_and_store_prices(state_filter: str = None) -> int:
     
     try:
         print(f"[market_price_service] Fetching data from {GOV_API_URL}")
-        response = requests.get(GOV_API_URL, params=params, timeout=15)
+        response = requests.get(GOV_API_URL, params=params, timeout=45)
         response.raise_for_status()
         data = response.json()
         
@@ -64,9 +64,11 @@ def fetch_and_store_prices(state_filter: str = None) -> int:
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Only wipe the database if we are pulling a global snapshot
+        # Wipe the database globally, or delete specific state records before inserting to avoid duplicates
         if not state_filter:
             cursor.execute("DELETE FROM crop_prices")
+        else:
+            cursor.execute("DELETE FROM crop_prices WHERE state LIKE ?", (f"%{state_filter}%",))
         
         insert_query = '''
             INSERT INTO crop_prices 
@@ -167,9 +169,9 @@ def get_latest_prices(state: str=None, commodity: str=None) -> List[Dict[str, An
     cursor.execute(query, params)
     rows = cursor.fetchall()
     
-    # [Dynamic State Caching] If we pulled less than 20 rows dynamically for a specific state,
+    # [Dynamic State Caching] If we pulled 0 rows dynamically for a specific state,
     # let's trigger an on-the-fly fetch strictly for that State!
-    if state and len(rows) < 20:
+    if state and len(rows) == 0:
         try:
             print(f"[market_price_service] Auto-expanding cache for state: {state}")
             fetch_and_store_prices(state_filter=state)

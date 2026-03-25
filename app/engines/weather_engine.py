@@ -7,11 +7,6 @@ FALLBACK_HUMIDITY = 60.0
 FALLBACK_RAINFALL = 1200.0
 
 def get_robust_weather(city_name: str, state_name: str) -> Dict[str, float]:
-    """
-    Attempts to fetch real weather data.
-    If the farm location is missing or the external API fails,
-    provides a robust fallback to prevent the model from failing.
-    """
     
     if not city_name or not state_name:
         return {
@@ -22,21 +17,18 @@ def get_robust_weather(city_name: str, state_name: str) -> Dict[str, float]:
         }
         
     try:
-        # We pass "IN" assuming India context based on prior discussions
-        # State code usually needs abbreviations, but we'll try what's given.
-        # This wrapper handles the potential UnboundLocalError in existing weather_service
+    
         weather = get_weather_data(city_name, state_name, "IN")
         
         temp = weather.get("temperature", FALLBACK_TEMP)
         humidity = weather.get("humidity", FALLBACK_HUMIDITY)
-        # Use an empirically sensible scaling factor representing the average effective 
-        # rainy/monsoon days per year in India (approx 40-50 days of concentrated rain)
+        
         daily_rainfall = weather.get("rainfall_5day_total", FALLBACK_RAINFALL / 40.0)
         
-        # Simulate annual rainfall (e.g. 30mm/day * 40 rainy days = 1200mm average)
+
         annual_rainfall = daily_rainfall * 40.0
         
-        # Ensure values aren't mathematically impossible or zero where it hurts
+        
         if temp < -20 or temp > 60: temp = FALLBACK_TEMP
         if humidity <= 0 or humidity > 100: humidity = FALLBACK_HUMIDITY
         if annual_rainfall <= 0: annual_rainfall = FALLBACK_RAINFALL
@@ -44,7 +36,7 @@ def get_robust_weather(city_name: str, state_name: str) -> Dict[str, float]:
         return {
             "temperature": temp,
             "humidity": humidity,
-            "rainfall": annual_rainfall, # Passed downstream as Annual Rainfall
+            "rainfall": annual_rainfall,
             "inferred_weather": False
         }
     except Exception as e:

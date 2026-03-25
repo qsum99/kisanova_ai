@@ -2,10 +2,6 @@ import os
 from flask import Flask
 
 def create_app():
-    """
-    Creates and configures the Flask application.
-    """
-    # Calculate absolute path for template and static directories
     base_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     template_dir = os.path.join(base_dir, 'frontend', 'templates')
     static_dir = os.path.join(base_dir, 'frontend', 'static')
