@@ -54,12 +54,24 @@
 
           {% if current_user %}
           <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% block nav_smartfarm %}{% endblock %}" href="#" role="button" data-bs-toggle="dropdown" style="color: #4ade80; font-weight: 600;">
+              <i class="bi bi-grid-3x3-gap me-1"></i>Smart Farm 🌱
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/farm-setup">⚙️ Farm Setup</a></li>
+              <li><a class="dropdown-item" href="/irrigation">💧 Irrigation Alerts</a></li>
+              <li><a class="dropdown-item" href="/fertilizer">🧪 Fertilizer & Soil</a></li>
+              <li><a class="dropdown-item" href="/farm-health">🛰️ Farm Health (NDVI)</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
               <i class="bi bi-person-circle me-1"></i>{{ current_user.name or current_user.username }}
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               {% if current_role == 'admin' %}
-              <li><span class="dropdown-item-text" style="color:var(--cyan);font-size:0.8rem;">🛡️ Admin</span></li>
+              <li><a class="dropdown-item" href="/admin/phase5-status" style="color:var(--cyan);font-size:0.8rem;">🛡️ Admin Phase 5</a></li>
               <li><hr class="dropdown-divider"></li>
               {% endif %}
               <li><a class="dropdown-item" href="#" onclick="logoutUser()">🚪 Logout</a></li>

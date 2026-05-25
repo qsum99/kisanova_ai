@@ -1,0 +1,257 @@
+{
+  "metadata": {
+    "source": "ICAR (Indian Council of Agricultural Research) — Fertilizer Recommendations",
+    "version": "1.0",
+    "last_updated": "2026-05-25",
+    "notes": "Recommended NPK doses in kg/ha. Timing follows Karnataka Agricultural Calendar."
+  },
+
+  "fertilizer_recommendations": {
+
+    "rice": {
+      "alluvial":   { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: 50% basal + 25% tillering + 25% panicle. P,K: full basal", "notes": "Use zinc sulphate 25 kg/ha in zinc-deficient soils" },
+      "black":      { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 40,  "timing": "N: 50% basal + 25% tillering + 25% panicle. P,K: full basal", "notes": "Black soil retains moisture well; avoid waterlogging" },
+      "red":        { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: 50% basal + 25% tillering + 25% panicle. P,K: full basal", "notes": "Apply FYM 10 t/ha before planting" },
+      "laterite":   { "N_kg_ha": 130, "P_kg_ha": 65,  "K_kg_ha": 65,  "timing": "N: 50% basal + 25% tillering + 25% panicle. P,K: full basal", "notes": "Laterite soils are nutrient-poor; supplement with organic matter" },
+      "default":    { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Standard ICAR recommendation for irrigated rice" }
+    },
+
+    "wheat": {
+      "alluvial":   { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 40,  "timing": "N: 50% basal + 50% at CRI stage (21 days). P,K: full basal", "notes": "Irrigate at CRI, booting and grain filling" },
+      "black":      { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 30,  "timing": "N: 50% basal + 50% at CRI stage. P,K: full basal", "notes": "Avoid excessive N in heavy black soils" },
+      "red":        { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 40,  "timing": "N: 50% basal + 50% at CRI stage. P,K: full basal", "notes": "Apply sulphur 20 kg/ha" },
+      "default":    { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 40,  "timing": "N: 50% basal + 50% at CRI stage. P,K: full basal", "notes": "Standard recommendation" }
+    },
+
+    "maize": {
+      "alluvial":   { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 40,  "timing": "N: 33% basal + 33% knee-high + 33% tasseling. P,K: full basal", "notes": "Zinc sulphate 25 kg/ha recommended" },
+      "black":      { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 40,  "timing": "N: 33% basal + 33% knee-high + 33% tasseling. P,K: full basal", "notes": "Good moisture retention in black soil" },
+      "red":        { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 40,  "timing": "N: 33% basal + 33% knee-high + 33% tasseling. P,K: full basal", "notes": "Supplement with FYM" },
+      "default":    { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 40,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Standard ICAR maize recommendation" }
+    },
+
+    "cotton": {
+      "black":      { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: 50% basal + 25% squaring + 25% boll formation. P,K: full basal", "notes": "Black soil ideal for cotton. Apply micronutrients" },
+      "alluvial":   { "N_kg_ha": 150, "P_kg_ha": 75,  "K_kg_ha": 75,  "timing": "N: 50% basal + 25% squaring + 25% boll formation. P,K: full basal", "notes": "Higher doses needed in lighter soils" },
+      "red":        { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: 50% basal + 25% squaring + 25% boll formation. P,K: full basal", "notes": "Apply boron 1 kg/ha" },
+      "default":    { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Standard Bt cotton recommendation" }
+    },
+
+    "sugarcane": {
+      "alluvial":   { "N_kg_ha": 250, "P_kg_ha": 100, "K_kg_ha": 120, "timing": "N: 33% planting + 33% 45 days + 33% 90 days. P: full basal. K: 50% basal + 50% at earthing up", "notes": "Heavy feeder crop. Apply FYM 25 t/ha" },
+      "black":      { "N_kg_ha": 200, "P_kg_ha": 85,  "K_kg_ha": 100, "timing": "N: 33% planting + 33% 45 days + 33% 90 days. P: full basal. K: 50% basal + 50% earthing up", "notes": "Black soil has good K reserves" },
+      "red":        { "N_kg_ha": 250, "P_kg_ha": 100, "K_kg_ha": 120, "timing": "N: 33% planting + 33% 45 days + 33% 90 days. P: full basal. K: split 2 doses", "notes": "Apply sulphur 40 kg/ha" },
+      "default":    { "N_kg_ha": 250, "P_kg_ha": 100, "K_kg_ha": 120, "timing": "N: split 3 doses over 90 days. P: basal. K: split 2 doses", "notes": "Ensure adequate irrigation" }
+    },
+
+    "groundnut": {
+      "red":        { "N_kg_ha": 20,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "All basal. Apply gypsum 400 kg/ha at pegging stage", "notes": "Legume — fixes N. Gypsum critical for pod filling" },
+      "alluvial":   { "N_kg_ha": 20,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "All basal. Gypsum at pegging", "notes": "Light sandy loam ideal" },
+      "black":      { "N_kg_ha": 15,  "P_kg_ha": 30,  "K_kg_ha": 30,  "timing": "All basal. Gypsum at pegging", "notes": "Avoid waterlogging in heavy black soil" },
+      "default":    { "N_kg_ha": 20,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "All basal + gypsum at pegging", "notes": "Standard groundnut recommendation" }
+    },
+
+    "soybean": {
+      "black":      { "N_kg_ha": 20,  "P_kg_ha": 80,  "K_kg_ha": 40,  "timing": "All basal. Rhizobium seed treatment essential", "notes": "Legume — low N needed. P is key nutrient" },
+      "alluvial":   { "N_kg_ha": 20,  "P_kg_ha": 60,  "K_kg_ha": 30,  "timing": "All basal + Rhizobium inoculation", "notes": "Apply sulphur 20 kg/ha" },
+      "red":        { "N_kg_ha": 25,  "P_kg_ha": 75,  "K_kg_ha": 40,  "timing": "All basal + Rhizobium", "notes": "Red soil needs more P" },
+      "default":    { "N_kg_ha": 20,  "P_kg_ha": 60,  "K_kg_ha": 40,  "timing": "All basal. Rhizobium seed treatment", "notes": "Standard soybean recommendation" }
+    },
+
+    "ragi": {
+      "red":        { "N_kg_ha": 50,  "P_kg_ha": 40,  "K_kg_ha": 25,  "timing": "N: 50% basal + 50% at tillering. P,K: full basal", "notes": "Finger millet — drought tolerant. Apply FYM 7.5 t/ha" },
+      "laterite":   { "N_kg_ha": 60,  "P_kg_ha": 40,  "K_kg_ha": 25,  "timing": "N: 50% basal + 50% tillering. P,K: full basal", "notes": "Higher N needed in poor laterite soils" },
+      "black":      { "N_kg_ha": 50,  "P_kg_ha": 40,  "K_kg_ha": 25,  "timing": "N: 50% basal + 50% tillering. P,K: full basal", "notes": "Suitable but prefers lighter soils" },
+      "default":    { "N_kg_ha": 50,  "P_kg_ha": 40,  "K_kg_ha": 25,  "timing": "N: split 2 doses. P,K: full basal", "notes": "Important Karnataka millet crop" }
+    },
+
+    "jowar": {
+      "black":      { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "N: 50% basal + 50% at knee-high stage. P,K: full basal", "notes": "Sorghum — drought tolerant. Black soil ideal" },
+      "red":        { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "N: 50% basal + 50% knee-high. P,K: full basal", "notes": "Apply zinc sulphate if deficient" },
+      "alluvial":   { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "N: 50% basal + 50% knee-high. P,K: basal", "notes": "Good yields in alluvial" },
+      "default":    { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "N: split 2 doses. P,K: basal", "notes": "Standard jowar recommendation" }
+    },
+
+    "bajra": {
+      "desert":     { "N_kg_ha": 60,  "P_kg_ha": 30,  "K_kg_ha": 0,   "timing": "N: 50% basal + 50% at 30 days. P: full basal", "notes": "Pearl millet — highly drought tolerant. K not needed in arid soils" },
+      "alluvial":   { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 20,  "timing": "N: 50% basal + 50% at 30 days. P,K: full basal", "notes": "Higher response in better soils" },
+      "red":        { "N_kg_ha": 60,  "P_kg_ha": 30,  "K_kg_ha": 20,  "timing": "N: 50% basal + 50% at 30 days. P,K: full basal", "notes": "Sandy loam ideal" },
+      "default":    { "N_kg_ha": 60,  "P_kg_ha": 30,  "K_kg_ha": 20,  "timing": "N: split 2 doses. P,K: basal", "notes": "Standard bajra/pearl millet recommendation" }
+    },
+
+    "tur": {
+      "black":      { "N_kg_ha": 20,  "P_kg_ha": 50,  "K_kg_ha": 20,  "timing": "All basal. Rhizobium seed treatment", "notes": "Pigeon pea — long duration crop (150-180 days). Fixes atmospheric N" },
+      "red":        { "N_kg_ha": 25,  "P_kg_ha": 50,  "K_kg_ha": 20,  "timing": "All basal. Rhizobium + PSB", "notes": "Apply sulphur 20 kg/ha" },
+      "alluvial":   { "N_kg_ha": 20,  "P_kg_ha": 40,  "K_kg_ha": 20,  "timing": "All basal. Bio-fertilizer inoculation", "notes": "Good response to phosphorus" },
+      "default":    { "N_kg_ha": 20,  "P_kg_ha": 50,  "K_kg_ha": 20,  "timing": "All basal + Rhizobium", "notes": "Standard tur/arhar recommendation" }
+    },
+
+    "bengal_gram": {
+      "black":      { "N_kg_ha": 20,  "P_kg_ha": 40,  "K_kg_ha": 20,  "timing": "All basal. Rhizobium + PSB seed treatment", "notes": "Chickpea — rabi pulse. Avoid excess irrigation" },
+      "alluvial":   { "N_kg_ha": 20,  "P_kg_ha": 40,  "K_kg_ha": 20,  "timing": "All basal + bio-fertilizers", "notes": "Well-drained soil essential" },
+      "red":        { "N_kg_ha": 20,  "P_kg_ha": 50,  "K_kg_ha": 20,  "timing": "All basal + Rhizobium", "notes": "Higher P in P-deficient red soils" },
+      "default":    { "N_kg_ha": 20,  "P_kg_ha": 40,  "K_kg_ha": 20,  "timing": "All basal + Rhizobium", "notes": "Standard Bengal gram / chana recommendation" }
+    },
+
+    "tomato": {
+      "red":        { "N_kg_ha": 120, "P_kg_ha": 80,  "K_kg_ha": 80,  "timing": "N: 50% basal + 25% at 30 days + 25% at 60 days. P,K: full basal", "notes": "Apply calcium to prevent blossom end rot" },
+      "alluvial":   { "N_kg_ha": 120, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: 50% basal + 25% at 30 days + 25% at 60 days. P,K: full basal", "notes": "Stake/trellis for indeterminate varieties" },
+      "black":      { "N_kg_ha": 100, "P_kg_ha": 60,  "K_kg_ha": 60,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Good drainage critical in black soils" },
+      "default":    { "N_kg_ha": 120, "P_kg_ha": 80,  "K_kg_ha": 60,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Standard tomato recommendation" }
+    },
+
+    "onion": {
+      "alluvial":   { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 50,  "timing": "N: 50% basal + 25% at 30 days + 25% at 45 days. P,K: full basal", "notes": "Apply sulphur 30 kg/ha for pungency" },
+      "red":        { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 50,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Sandy loam ideal for bulb development" },
+      "black":      { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 40,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Raised beds recommended in black soil" },
+      "default":    { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 50,  "timing": "N: split 3 doses. P,K: full basal", "notes": "Standard onion recommendation" }
+    },
+
+    "potato": {
+      "alluvial":   { "N_kg_ha": 150, "P_kg_ha": 100, "K_kg_ha": 100, "timing": "N: 50% at planting + 50% at earthing up. P,K: full at planting", "notes": "Heavy feeder. Apply FYM 20 t/ha" },
+      "red":        { "N_kg_ha": 150, "P_kg_ha": 100, "K_kg_ha": 100, "timing": "N: 50% planting + 50% earthing up. P,K: full basal", "notes": "Sandy loam ideal" },
+      "mountain":   { "N_kg_ha": 120, "P_kg_ha": 80,  "K_kg_ha": 80,  "timing": "N: 50% planting + 50% earthing up. P,K: full basal", "notes": "Cool season crop for hills" },
+      "default":    { "N_kg_ha": 150, "P_kg_ha": 100, "K_kg_ha": 100, "timing": "N: split 2 doses. P,K: full basal", "notes": "Standard potato recommendation" }
+    },
+
+    "banana": {
+      "alluvial":   { "N_kg_ha": 200, "P_kg_ha": 60,  "K_kg_ha": 300, "timing": "N,K: split into 5 equal doses at monthly intervals from 2nd month. P: full basal", "notes": "K is the most critical nutrient. Apply 10 kg FYM/plant" },
+      "red":        { "N_kg_ha": 200, "P_kg_ha": 60,  "K_kg_ha": 300, "timing": "N,K: 5 monthly doses. P: full basal", "notes": "Drip fertigation recommended in red soil" },
+      "laterite":   { "N_kg_ha": 220, "P_kg_ha": 75,  "K_kg_ha": 300, "timing": "N,K: 5 monthly doses. P: full basal", "notes": "Higher doses in nutrient-poor laterite" },
+      "default":    { "N_kg_ha": 200, "P_kg_ha": 60,  "K_kg_ha": 300, "timing": "N,K: split monthly. P: basal", "notes": "Standard banana recommendation. K critical" }
+    },
+
+    "mango": {
+      "red":        { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 100, "timing": "Full dose post-harvest (June-July) in basin around tree. Split N into 2 doses in young trees", "notes": "Per bearing tree: 1 kg N, 0.5 kg P₂O₅, 1 kg K₂O" },
+      "laterite":   { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 100, "timing": "Post-harvest application", "notes": "Apply micronutrients (Zn, B) as foliar spray" },
+      "alluvial":   { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 80,  "timing": "Post-harvest basin application", "notes": "Avoid excess N — promotes vegetative growth over fruiting" },
+      "default":    { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 100, "timing": "Post-harvest application", "notes": "Per tree basis. Increase with tree age" }
+    },
+
+    "coconut": {
+      "laterite":   { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 150, "timing": "Split into 2 doses: pre-monsoon (May) and post-monsoon (Sep). Basin application", "notes": "Per palm: 0.5 kg N, 0.32 kg P₂O₅, 1.2 kg K₂O per year" },
+      "red":        { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 150, "timing": "2 split doses: May and September", "notes": "Apply borax 50g/palm and MgSO₄ 500g/palm" },
+      "alluvial":   { "N_kg_ha": 80,  "P_kg_ha": 40,  "K_kg_ha": 120, "timing": "2 split doses around monsoon", "notes": "Sandy coastal soils — apply organic matter" },
+      "default":    { "N_kg_ha": 100, "P_kg_ha": 50,  "K_kg_ha": 150, "timing": "Split 2 doses pre/post-monsoon", "notes": "Standard coconut recommendation. K is critical" }
+    },
+
+    "arecanut": {
+      "laterite":   { "N_kg_ha": 100, "P_kg_ha": 40,  "K_kg_ha": 140, "timing": "Split into 2 doses: pre-monsoon (May-Jun) and post-monsoon (Sep-Oct). Apply in basin 1.5m radius", "notes": "Per palm: 100g N, 40g P₂O₅, 140g K₂O. Apply 12 kg FYM/palm. Lime 1 kg/palm if pH < 5.5" },
+      "red":        { "N_kg_ha": 100, "P_kg_ha": 40,  "K_kg_ha": 140, "timing": "2 split doses: May-Jun and Sep-Oct", "notes": "Apply neem cake 2 kg/palm + bone meal for P" },
+      "alluvial":   { "N_kg_ha": 80,  "P_kg_ha": 35,  "K_kg_ha": 120, "timing": "2 split doses pre/post-monsoon", "notes": "Good drainage essential. Irrigate in summer" },
+      "default":    { "N_kg_ha": 100, "P_kg_ha": 40,  "K_kg_ha": 140, "timing": "Split 2 doses pre/post-monsoon", "notes": "Karnataka is India's largest arecanut producer. K is critical nutrient" }
+    },
+
+    "coffee": {
+      "laterite":   { "N_kg_ha": 160, "P_kg_ha": 120, "K_kg_ha": 160, "timing": "Split into 3 doses: pre-blossom (Mar), post-blossom (May), and monsoon (Aug-Sep). Ring application around bush", "notes": "Arabica: 40-30-40 g/bush NPK. Robusta: 60-40-60 g/bush. Apply FYM 5 t/ha. Shade management critical" },
+      "red":        { "N_kg_ha": 150, "P_kg_ha": 100, "K_kg_ha": 150, "timing": "3 split doses: Mar, May, Aug-Sep", "notes": "Apply dolomite lime 1 t/ha every 3 years if pH < 5.5" },
+      "mountain":   { "N_kg_ha": 140, "P_kg_ha": 100, "K_kg_ha": 140, "timing": "3 split doses through growing season", "notes": "Shade trees mandatory. Silver oak or dadap recommended" },
+      "default":    { "N_kg_ha": 160, "P_kg_ha": 120, "K_kg_ha": 160, "timing": "Split 3 doses: pre-blossom, post-blossom, monsoon", "notes": "Karnataka produces 70% of India's coffee. Coorg, Chikmagalur, Hassan districts" }
+    },
+
+    "cardamom": {
+      "laterite":   { "N_kg_ha": 75,  "P_kg_ha": 75,  "K_kg_ha": 150, "timing": "Split into 2 doses: pre-monsoon (May) and post-monsoon (Sep). Apply in shallow trenches between rows", "notes": "Per clump: 15g N, 15g P₂O₅, 30g K₂O. Apply FYM 5 kg/clump. Mulching 15 t/ha essential" },
+      "red":        { "N_kg_ha": 75,  "P_kg_ha": 75,  "K_kg_ha": 150, "timing": "2 split doses: May and Sep", "notes": "Shade (40-60%) essential. Growing altitude: 600-1500m" },
+      "mountain":   { "N_kg_ha": 75,  "P_kg_ha": 75,  "K_kg_ha": 150, "timing": "2 split doses pre/post-monsoon", "notes": "Well-drained forest loam ideal. pH 5.0-6.5 optimal" },
+      "default":    { "N_kg_ha": 75,  "P_kg_ha": 75,  "K_kg_ha": 150, "timing": "Split 2 doses pre/post-monsoon", "notes": "Queen of Spices. Karnataka is major producer. K is most critical" }
+    },
+
+    "mulberry": {
+      "red":        { "N_kg_ha": 300, "P_kg_ha": 120, "K_kg_ha": 120, "timing": "N: split into 5-6 equal doses after each leaf harvest. P,K: 2 split doses (Jun and Oct)", "notes": "Sericulture crop. 5-6 harvests/year. Apply FYM 20 t/ha. Irrigate every 8-10 days" },
+      "alluvial":   { "N_kg_ha": 300, "P_kg_ha": 100, "K_kg_ha": 100, "timing": "N: after each harvest. P,K: split 2 doses", "notes": "High N requirement for leaf quality" },
+      "laterite":   { "N_kg_ha": 350, "P_kg_ha": 140, "K_kg_ha": 140, "timing": "N: after each harvest. P,K: split 2 doses", "notes": "Higher doses needed in nutrient-poor laterite. Apply lime if pH < 6.0" },
+      "black":      { "N_kg_ha": 280, "P_kg_ha": 100, "K_kg_ha": 100, "timing": "N: after each harvest. P,K: split 2 doses", "notes": "Avoid waterlogging. Raised bed planting in heavy black soils" },
+      "default":    { "N_kg_ha": 300, "P_kg_ha": 120, "K_kg_ha": 120, "timing": "N: split after each harvest (5-6 per year). P,K: split 2 doses", "notes": "Karnataka is India's largest silk producer. High N essential for leaf biomass" }
+    }
+  },
+
+  "karnataka_crop_calendar": {
+    "kharif": {
+      "season": "June to November",
+      "sowing": "June-July (with onset of SW monsoon)",
+      "crops": ["rice", "ragi", "maize", "jowar", "cotton", "groundnut", "tur", "soybean"],
+      "notes": "Main cropping season. SW monsoon June-September. Rice in coastal & Malnad. Ragi in southern dry zone."
+    },
+    "rabi": {
+      "season": "November to March",
+      "sowing": "October-November (after kharif harvest)",
+      "crops": ["wheat", "bengal_gram", "jowar", "onion", "potato", "tomato"],
+      "notes": "NE monsoon supplementary rains. Irrigated crops in northern Karnataka. Jowar rabi in Bijapur, Bagalkot."
+    },
+    "summer": {
+      "season": "March to May",
+      "sowing": "February-March",
+      "crops": ["groundnut", "tomato", "onion", "watermelon"],
+      "notes": "Irrigated crops only. Water-stress period. Heat waves April-May in north Karnataka."
+    },
+    "perennial": {
+      "season": "Year-round (planted once)",
+      "crops": ["sugarcane", "banana", "coconut", "arecanut", "coffee", "cardamom", "mango", "mulberry"],
+      "notes": "Perennial plantation/horticultural crops. Coffee & cardamom in Malnad/Western Ghats. Arecanut in Shimoga, Uttara Kannada. Mulberry across south Karnataka."
+    }
+  },
+
+  "soil_amendment_rules": {
+    "acidic_soil": {
+      "ph_range": [0.0, 6.0],
+      "amendment": "Agricultural lime (calcium carbonate)",
+      "dose_kg_ha": 500,
+      "timing": "Apply 2-3 weeks before sowing. Work into top 15 cm of soil",
+      "notes": "Raises pH by 0.5-1.0 units. Improves P availability and reduces Al/Mn toxicity"
+    },
+    "highly_acidic_soil": {
+      "ph_range": [0.0, 5.0],
+      "amendment": "Dolomite lime (CaMg(CO₃)₂)",
+      "dose_kg_ha": 1000,
+      "timing": "Apply 1 month before sowing. Also supplies magnesium",
+      "notes": "For laterite and forest soils in Western Ghats. Common in coffee/cardamom zones"
+    },
+    "alkaline_soil": {
+      "ph_range": [8.0, 14.0],
+      "amendment": "Gypsum (calcium sulphate)",
+      "dose_kg_ha": 1000,
+      "timing": "Apply 2 weeks before sowing. Incorporate into soil",
+      "notes": "Reduces soil sodicity. Common in northern Karnataka black soil regions"
+    },
+    "saline_soil": {
+      "ph_range": [7.5, 14.0],
+      "amendment": "Gypsum + organic matter",
+      "dose_kg_ha": 2000,
+      "timing": "Apply gypsum + FYM 10 t/ha. Leach with good quality water",
+      "notes": "Check EC (electrical conductivity). If EC > 4 dS/m, reclamation needed"
+    }
+  },
+
+  "micronutrient_deficiency_signs": {
+    "nitrogen": {
+      "visual": "Older leaves turn pale yellow/green (chlorosis). Stunted growth",
+      "ndvi_pattern": "NDVI flat/declining during vegetative stage despite adequate water",
+      "remedy": "Top-dress with Urea (46% N) at 50 kg/ha"
+    },
+    "phosphorus": {
+      "visual": "Purple/reddish discoloration on leaves. Poor root growth",
+      "ndvi_pattern": "Slow NDVI increase during early growth stages",
+      "remedy": "Apply DAP (18-46-0) or SSP. Mycorrhiza inoculation helps"
+    },
+    "potassium": {
+      "visual": "Leaf margin scorching. Weak stems. Poor fruit quality",
+      "ndvi_pattern": "NDVI drops during fruiting/flowering stage",
+      "remedy": "Apply MOP (Muriate of Potash 60% K₂O) at 50 kg/ha"
+    },
+    "zinc": {
+      "visual": "Interveinal chlorosis. Small/distorted leaves (khaira disease in rice)",
+      "ndvi_pattern": "Patchy NDVI within field",
+      "remedy": "ZnSO₄ 25 kg/ha soil application or 0.5% foliar spray"
+    },
+    "iron": {
+      "visual": "Interveinal chlorosis on young leaves. Yellowing",
+      "ndvi_pattern": "NDVI decline with yellowing pattern visible",
+      "remedy": "FeSO₄ 10 kg/ha soil application or 1% foliar spray"
+    },
+    "boron": {
+      "visual": "Distorted growing points. Hollow stem in cauliflower. Poor fruit set",
+      "ndvi_pattern": "NDVI plateau despite good vegetative growth",
+      "remedy": "Borax 10 kg/ha soil or 0.2% boric acid foliar spray"
+    }
+  }
+}

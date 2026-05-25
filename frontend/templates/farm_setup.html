@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Farm Setup — Farmer AI{% endblock %}
+{% block nav_smartfarm %}active{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      
+      <div class="card bg-dark border-secondary shadow-lg">
+        <div class="card-header border-secondary bg-transparent pb-0">
+          <h2 class="text-success mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Farm Setup</h2>
+          <p class="text-muted mb-3">Configure your farm location, soil type, and current crop to receive personalized smart alerts.</p>
+        </div>
+        
+        <div class="card-body pt-4">
+          <form id="farmSetupForm">
+            <!-- 1. Location -->
+            <h5 class="text-info mb-3">1. Farm Location</h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Latitude</label>
+                <input type="number" step="0.000001" class="form-control bg-dark text-light" id="latInput" required placeholder="e.g. 12.9716">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Longitude</label>
+                <input type="number" step="0.000001" class="form-control bg-dark text-light" id="lonInput" required placeholder="e.g. 77.5946">
+              </div>
+              <div class="col-12">
+                <button type="button" class="btn btn-outline-info btn-sm" id="getLocationBtn">
+                  <i class="bi bi-crosshair me-1"></i>Use Current Location
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Soil & Farm Details -->
+            <h5 class="text-info mb-3">2. Farm Details</h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Soil Type</label>
+                <select class="form-select bg-dark text-light" id="soilInput" required>
+                  <option value="">Select Soil Type...</option>
+                  <option value="red">Red Soil</option>
+                  <option value="black">Black Soil (Regur)</option>
+                  <option value="alluvial">Alluvial Soil</option>
+                  <option value="laterite">Laterite Soil</option>
+                  <option value="coastal">Coastal Sandy Soil</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Farm Size (Hectares)</label>
+                <input type="number" step="0.1" min="0.1" class="form-control bg-dark text-light" id="sizeInput" value="1.0" required>
+              </div>
+            </div>
+
+            <!-- 3. Current Crop -->
+            <h5 class="text-info mb-3">3. Current Crop</h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Crop Type</label>
+                <select class="form-select bg-dark text-light" id="cropInput" required>
+                  <option value="">Select Crop...</option>
+                  <option value="rice">Rice (Paddy)</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="maize">Maize</option>
+                  <option value="cotton">Cotton</option>
+                  <option value="sugarcane">Sugarcane</option>
+                  <option value="ragi">Ragi (Finger Millet)</option>
+                  <option value="jowar">Jowar (Sorghum)</option>
+                  <option value="groundnut">Groundnut</option>
+                  <option value="tur">Tur (Pigeon Pea)</option>
+                  <option value="tomato">Tomato</option>
+                  <option value="onion">Onion</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Planting Date</label>
+                <input type="date" class="form-control bg-dark text-light" id="dateInput" required>
+              </div>
+            </div>
+            
+            <!-- 4. Preferences -->
+            <h5 class="text-info mb-3">4. Notification Preferences</h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Phone/Email for Alerts</label>
+                <input type="text" class="form-control bg-dark text-light" id="contactInput" placeholder="Email or Phone">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Preferred Language</label>
+                <select class="form-select bg-dark text-light" id="langInput">
+                  <option value="en">English</option>
+                  <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                </select>
+              </div>
+            </div>
+
+            <hr class="border-secondary mb-4">
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-success btn-lg" id="saveBtn">
+                <i class="bi bi-check2-circle me-2"></i>Complete Setup & Analyze Farm
+              </button>
+            </div>
+            
+            <div id="setupAlert" class="alert d-none mt-3"></div>
+          </form>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Set today as max date for planting
+    document.getElementById('dateInput').max = new Date().toISOString().split("T")[0];
+    
+    // Load existing profile data if available
+    fetch('/api/phase5/farm-health-data')
+      .then(r => r.json())
+      .then(res => {
+          if(res.success && res.farmer_profile) {
+              const p = res.farmer_profile;
+              document.getElementById('latInput').value = p.lat;
+              document.getElementById('lonInput').value = p.lon;
+              document.getElementById('cropInput').value = p.crop_type;
+              document.getElementById('soilInput').value = p.soil_type;
+              document.getElementById('dateInput').value = p.planting_date;
+              document.getElementById('sizeInput').value = p.farm_size_ha || 1.0;
+          }
+      }).catch(() => {});
+
+    // Get Current Location
+    document.getElementById('getLocationBtn').addEventListener('click', () => {
+        const btn = document.getElementById('getLocationBtn');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Locating...';
+        
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    document.getElementById('latInput').value = position.coords.latitude.toFixed(6);
+                    document.getElementById('lonInput').value = position.coords.longitude.toFixed(6);
+                    btn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Location Found';
+                    btn.classList.replace('btn-outline-info', 'btn-outline-success');
+                },
+                (error) => {
+                    alert("Could not get location. Please enter manually.");
+                    btn.innerHTML = '<i class="bi bi-crosshair me-1"></i>Use Current Location';
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by your browser");
+        }
+    });
+
+    // Form Submission
+    document.getElementById('farmSetupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('saveBtn');
+        const alertBox = document.getElementById('setupAlert');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Setting up farm... this may take a moment';
+        alertBox.classList.add('d-none');
+        
+        const payload = {
+            lat: parseFloat(document.getElementById('latInput').value),
+            lon: parseFloat(document.getElementById('lonInput').value),
+            soil_type: document.getElementById('soilInput').value,
+            crop_type: document.getElementById('cropInput').value,
+            planting_date: document.getElementById('dateInput').value,
+            farm_size_ha: parseFloat(document.getElementById('sizeInput').value),
+            phone: document.getElementById('contactInput').value,
+            language: document.getElementById('langInput').value,
+        };
+
+        try {
+            // Using the onboard API to do full setup (Extra 6)
+            const response = await fetch('/api/phase5/onboard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alertBox.className = 'alert alert-success mt-3';
+                alertBox.innerHTML = `<strong>Success!</strong> ${result.message}<br>Redirecting to your dashboard...`;
+                alertBox.classList.remove('d-none');
+                
+                setTimeout(() => {
+                    window.location.href = '/farm-health';
+                }, 2000);
+            } else {
+                alertBox.className = 'alert alert-danger mt-3';
+                alertBox.innerHTML = `<strong>Error:</strong> ${result.error}`;
+                alertBox.classList.remove('d-none');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Complete Setup & Analyze Farm';
+            }
+        } catch (error) {
+            alertBox.className = 'alert alert-danger mt-3';
+            alertBox.innerHTML = `<strong>Network Error:</strong> Please try again.`;
+            alertBox.classList.remove('d-none');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Complete Setup & Analyze Farm';
+        }
+    });
+});
+</script>
+{% endblock %}

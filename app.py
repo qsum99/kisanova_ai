@@ -51,5 +51,35 @@ def login_page():
 def register_page():
     return render_template("register.html")
 
+# ── Phase 5 Routes ──
+@app.route("/farm-setup")
+@login_required
+def farm_setup():
+    return render_template("farm_setup.html")
+
+@app.route("/irrigation")
+@login_required
+def irrigation():
+    return render_template("irrigation.html")
+
+@app.route("/fertilizer")
+@login_required
+def fertilizer():
+    return render_template("fertilizer.html")
+
+@app.route("/farm-health")
+@login_required
+def farm_health():
+    return render_template("farm_health.html")
+
+@app.route("/admin/phase5-status")
+@login_required
+def admin_phase5_status_page():
+    if session.get("role") != "admin":
+        return redirect("/")
+    return render_template("admin_phase5.html")
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

@@ -30,11 +30,14 @@ def create_app():
         from app.routes.price_routes import price_routes
         from app.routes.auth_routes import auth_routes
         from app.routes.robust_routes import robust_routes
+        from app.routes.phase5_routes import phase5_bp, phase5_pages_bp
         app.register_blueprint(crop_routes, url_prefix='/api')
         app.register_blueprint(disease_routes, url_prefix='/api')
         app.register_blueprint(price_routes, url_prefix='/api')
         app.register_blueprint(auth_routes, url_prefix='/api')
         app.register_blueprint(robust_routes, url_prefix='/api')
+        app.register_blueprint(phase5_bp, url_prefix='/api')
+        app.register_blueprint(phase5_pages_bp)
     
     # Simple health check endpoint
     @app.route('/health')
