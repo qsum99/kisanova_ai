@@ -240,7 +240,17 @@ def get_admin_status():
 
     try:
         conn = get_db_connection()
-        farmer_count = conn.execute("SELECT COUNT(*) FROM farmer_profile").fetchone()[0]
+        # Phase 5 Setup profiles
+        profile_count = conn.execute("SELECT COUNT(*) FROM farmer_profile").fetchone()[0]
+        # Registered auth profiles
+        user_count = conn.execute("SELECT COUNT(*) FROM farmers").fetchone()[0]
+        # Predictions count
+        pred_count = conn.execute("SELECT COUNT(*) FROM crop_predictions_log").fetchone()[0]
+        # Disease scans count
+        scan_count = conn.execute("SELECT COUNT(*) FROM disease_scans_log").fetchone()[0]
+        # Price listings count
+        price_count = conn.execute("SELECT COUNT(*) FROM crop_prices").fetchone()[0]
+        
         irrigation_count = conn.execute("SELECT COUNT(*) FROM irrigation_log").fetchone()[0]
         fertilizer_count = conn.execute("SELECT COUNT(*) FROM fertilizer_log").fetchone()[0]
         alerts_count = conn.execute("SELECT COUNT(*) FROM alerts_log").fetchone()[0]
@@ -248,7 +258,12 @@ def get_admin_status():
 
         return jsonify({
             "success": True,
-            "farmer_count": farmer_count,
+            "farmer_count": profile_count,  # for backward compatibility
+            "profile_count": profile_count,
+            "user_count": user_count,
+            "predictions_count": pred_count,
+            "scans_count": scan_count,
+            "prices_count": price_count,
             "total_irrigation_decisions": irrigation_count,
             "total_fertilizer_decisions": fertilizer_count,
             "total_alerts_sent": alerts_count,
@@ -421,5 +436,82 @@ def admin_trigger_alert(farmer_id):
             return jsonify({"success": True, "message": f"Successfully sent alert email to {farmer_dict['email']}!"})
         else:
             return jsonify({"success": False, "message": "Failed to send alert. Check SMTP configuration or target email address."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/users', methods=['GET'])
+def admin_get_users():
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        rows = conn.execute("SELECT id, name, phone, country, state, city, created_at FROM farmers ORDER BY created_at DESC").fetchall()
+        conn.close()
+        return jsonify({"success": True, "users": [dict(r) for r in rows]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/delete-user/<int:user_id>', methods=['POST'])
+def admin_delete_user(user_id):
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        # Delete user
+        conn.execute("DELETE FROM farmers WHERE id = ?", (user_id,))
+        # Also clean up their profile if they have one
+        profile = conn.execute("SELECT id FROM farmer_profile WHERE user_id = ?", (user_id,)).fetchone()
+        if profile:
+            pid = profile["id"]
+            conn.execute("DELETE FROM farmer_profile WHERE id = ?", (pid,))
+            conn.execute("DELETE FROM irrigation_log WHERE farmer_id = ?", (pid,))
+            conn.execute("DELETE FROM fertilizer_log WHERE farmer_id = ?", (pid,))
+            conn.execute("DELETE FROM ndvi_log WHERE farmer_id = ?", (pid,))
+            conn.execute("DELETE FROM farmer_activity WHERE farmer_id = ?", (pid,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": f"Successfully deleted user account {user_id}."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/predictions', methods=['GET'])
+def admin_get_predictions_logs():
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        rows = conn.execute('''
+            SELECT pl.*, f.name 
+            FROM crop_predictions_log pl
+            LEFT JOIN farmers f ON pl.farmer_id = f.id
+            ORDER BY pl.created_at DESC LIMIT 50
+        ''').fetchall()
+        conn.close()
+        return jsonify({"success": True, "predictions": [dict(r) for r in rows]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/scans', methods=['GET'])
+def admin_get_scans_logs():
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        rows = conn.execute('''
+            SELECT sl.*, f.name 
+            FROM disease_scans_log sl
+            LEFT JOIN farmers f ON sl.farmer_id = f.id
+            ORDER BY sl.created_at DESC LIMIT 50
+        ''').fetchall()
+        conn.close()
+        return jsonify({"success": True, "scans": [dict(r) for r in rows]})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

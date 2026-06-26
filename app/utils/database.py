@@ -131,6 +131,28 @@ def init_db():
         )
     ''')
     
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS crop_predictions_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            farmer_id INTEGER,
+            n REAL, p REAL, k REAL, ph REAL,
+            temperature REAL, humidity REAL, rainfall REAL,
+            recommended_crop TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS disease_scans_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            farmer_id INTEGER,
+            image_filename TEXT,
+            detected_disease TEXT,
+            confidence REAL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     conn.close()
     print(f"[Database] Initialized SQLite DB at {DB_PATH}")

@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.services import weather_service
 from app.services import model_service
+from app.utils.database import get_db_connection
 
 crop_routes = Blueprint('crop_routes', __name__)
 
@@ -42,6 +43,19 @@ def predict_crop():
 
         recommended_crop = model_service.predict(features)
         recommended_crop = str(recommended_crop)
+
+        # Store in database if user is logged in
+        user_id = session.get("user", {}).get("id") if 'user' in session else None
+        try:
+            conn = get_db_connection()
+            conn.execute(
+                "INSERT INTO crop_predictions_log (farmer_id, n, p, k, ph, temperature, humidity, rainfall, recommended_crop) VALUES (?,?,?,?,?,?,?,?,?)",
+                (user_id, n_val, p_val, k_val, ph_val, temperature, humidity, rainfall_total, recommended_crop)
+            )
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"[Database] Log prediction error: {e}")
 
         response = {
             "recommended_crop": recommended_crop,

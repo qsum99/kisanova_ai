@@ -1,51 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard — Farmer AI{% endblock %}
+{% block title %}Admin Command Center — Farmer AI{% endblock %}
 
 {% block content %}
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-success fw-bold"><i class="bi bi-shield-lock-fill me-2 text-success"></i>Admin Command Center</h2>
+    <h2 class="text-success fw-bold"><i class="bi bi-shield-lock-fill me-2 text-success"></i>Global Admin Command Center</h2>
     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill">
       <i class="bi bi-broadcast me-1"></i>System Administrator Mode
     </span>
   </div>
 
-  <!-- Summary Cards -->
+  <!-- Global Platform Stats -->
   <div class="row g-3 mb-4" id="mainSummary">
     <div class="col-md-3">
       <div class="card premium-card shadow text-center py-3">
         <div class="card-body">
           <i class="bi bi-people-fill text-success fs-2"></i>
-          <h2 class="text-success fw-bold mt-2 mb-1" id="farmerCountVal">0</h2>
-          <p class="text-muted small mb-0">Active Farmers</p>
+          <h2 class="text-success fw-bold mt-2 mb-1" id="userCountVal">0</h2>
+          <p class="text-muted small mb-0">Registered Users</p>
         </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card premium-card shadow text-center py-3">
         <div class="card-body">
-          <i class="bi bi-droplet-fill text-primary fs-2"></i>
-          <h2 class="text-primary fw-bold mt-2 mb-1" id="irrigationCountVal">0</h2>
-          <p class="text-muted small mb-0">Irrigation Decisions</p>
+          <i class="bi bi-grid-3x3-gap-fill text-primary fs-2"></i>
+          <h2 class="text-primary fw-bold mt-2 mb-1" id="farmerCountVal">0</h2>
+          <p class="text-muted small mb-0">Active Farm Setups</p>
         </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card premium-card shadow text-center py-3">
         <div class="card-body">
-          <i class="bi bi-heptagon-fill text-warning fs-2"></i>
-          <h2 class="text-warning fw-bold mt-2 mb-1" id="fertilizerCountVal">0</h2>
-          <p class="text-muted small mb-0">Fertilizer Decisions</p>
+          <i class="bi bi-flower1 text-warning fs-2"></i>
+          <h2 class="text-warning fw-bold mt-2 mb-1" id="predictionsCountVal">0</h2>
+          <p class="text-muted small mb-0">Crop Predictions</p>
         </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card premium-card shadow text-center py-3">
         <div class="card-body">
-          <i class="bi bi-envelope-fill text-info fs-2"></i>
-          <h2 class="text-info fw-bold mt-2 mb-1" id="alertsCountVal">0</h2>
-          <p class="text-muted small mb-0">Alerts Dispatched</p>
+          <i class="bi bi-search text-info fs-2"></i>
+          <h2 class="text-info fw-bold mt-2 mb-1" id="scansCountVal">0</h2>
+          <p class="text-muted small mb-0">Disease Leaf Scans</p>
         </div>
       </div>
     </div>
@@ -54,25 +54,40 @@
   <!-- Tabbed Console -->
   <div class="card premium-card shadow-lg">
     <div class="premium-card-header bg-transparent border-secondary py-3">
-      <ul class="nav nav-pills gap-2" id="adminTabs" role="tablist">
+      <ul class="nav nav-pills gap-2 flex-wrap" id="adminTabs" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active px-4 py-2 fw-bold text-light" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab">
+          <button class="nav-link active px-3 py-2 fw-bold text-light" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab">
             <i class="bi bi-cpu me-1"></i>Platform Status
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link px-4 py-2 fw-bold text-light" id="farmers-tab" data-bs-toggle="tab" data-bs-target="#farmers-pane" type="button" role="tab">
-            <i class="bi bi-person-lines-fill me-1"></i>Farmers Manager
+          <button class="nav-link px-3 py-2 fw-bold text-light" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button" role="tab">
+            <i class="bi bi-people me-1"></i>User Accounts
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link px-4 py-2 fw-bold text-light" id="behavior-tab" data-bs-toggle="tab" data-bs-target="#behavior-pane" type="button" role="tab">
+          <button class="nav-link px-3 py-2 fw-bold text-light" id="farmers-tab" data-bs-toggle="tab" data-bs-target="#farmers-pane" type="button" role="tab">
+            <i class="bi bi-geo-alt-fill me-1"></i>Smart Farm Setup
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link px-3 py-2 fw-bold text-light" id="behavior-tab" data-bs-toggle="tab" data-bs-target="#behavior-pane" type="button" role="tab">
             <i class="bi bi-fingerprint me-1"></i>User Behaviors
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link px-4 py-2 fw-bold text-light" id="recs-tab" data-bs-toggle="tab" data-bs-target="#recs-pane" type="button" role="tab">
-            <i class="bi bi-database-fill me-1"></i>Decision Logs
+          <button class="nav-link px-3 py-2 fw-bold text-light" id="predictions-tab" data-bs-toggle="tab" data-bs-target="#predictions-pane" type="button" role="tab">
+            <i class="bi bi-graph-up-arrow me-1"></i>Predictions Log
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link px-3 py-2 fw-bold text-light" id="scans-tab" data-bs-toggle="tab" data-bs-target="#scans-pane" type="button" role="tab">
+            <i class="bi bi-camera me-1"></i>Disease Scans Log
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link px-3 py-2 fw-bold text-light" id="recs-tab" data-bs-toggle="tab" data-bs-target="#recs-pane" type="button" role="tab">
+            <i class="bi bi-database me-1"></i>AI Decisions
           </button>
         </li>
       </ul>
@@ -88,37 +103,62 @@
               <h5 class="text-info mb-3">System Diagnostics</h5>
               <div class="bg-dark bg-opacity-50 p-3 border border-secondary rounded mb-3">
                 <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">System Health:</span>
+                  <span class="text-muted">Platform Health:</span>
                   <span class="badge bg-success" id="healthVal">Online</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">Operations Mode:</span>
+                  <span class="text-muted">Smart Alert Engine Mode:</span>
                   <span class="text-success fw-bold" id="modeVal">On-Demand (Synchronous)</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">SMTP Email Relay:</span>
-                  <span class="text-info font-monospace">smtp.gmail.com (SSL/TLS)</span>
+                  <span class="text-muted">Email Alert Relay:</span>
+                  <span class="text-info font-monospace">smtp.gmail.com (587)</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">Database Engine:</span>
+                  <span class="text-light">SQLite (farmer_ai.db)</span>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <span class="text-muted">Active Database:</span>
-                  <span class="text-light">SQLite (farmer_ai.db)</span>
+                  <span class="text-muted">Crop Price Listings:</span>
+                  <span class="text-warning font-monospace" id="priceCountVal">0</span>
                 </div>
               </div>
             </div>
             
             <div class="col-md-6">
-              <h5 class="text-info mb-3">Administrative Tools</h5>
-              <p class="text-muted small">Use these simulation tools to check how recommendations scale dynamically with simulated weather changes across all profiles.</p>
-              <div class="d-flex gap-2">
-                <button class="btn btn-outline-info w-100 py-3" onclick="loadAllAdminData()">
-                  <i class="bi bi-arrow-clockwise me-2"></i>Force Global Refresh
+              <h5 class="text-info mb-3">Diagnostic Panel</h5>
+              <p class="text-muted small">Perform a global diagnostic refresh to sync all data listings, reset simulated activities, or reload crop prediction templates.</p>
+              <div class="d-grid gap-2">
+                <button class="btn btn-outline-info py-2.5" onclick="loadAllAdminData()">
+                  <i class="bi bi-arrow-clockwise me-2"></i>Global Refetch Status
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Tab 2: Farmers Manager -->
+        <!-- Tab 2: User Accounts -->
+        <div class="tab-pane fade" id="users-pane" role="tabpanel">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Name</th>
+                  <th>Contact Phone</th>
+                  <th>Region / Location</th>
+                  <th>Sign Up Date</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="6" class="text-center text-muted py-4">No registered user profiles found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 3: Farmers Manager -->
         <div class="tab-pane fade" id="farmers-pane" role="tabpanel">
           <div class="table-responsive">
             <table class="table table-dark table-hover align-middle mb-0">
@@ -133,22 +173,63 @@
                 </tr>
               </thead>
               <tbody id="farmersTableBody">
-                <tr><td colspan="6" class="text-center text-muted py-4">No registered farmer profiles found.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-4">No active farm setup profiles found.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Tab 3: User Behaviors -->
+        <!-- Tab 4: User Behaviors -->
         <div class="tab-pane fade" id="behavior-pane" role="tabpanel">
-          <h5 class="text-info mb-3"><i class="bi bi-clock-history me-2"></i>Chronological Activity Log</h5>
-          <p class="text-muted small">Tracks what actions users actually took in response to the recommendations (watered vs skipped vs fertilized).</p>
+          <h5 class="text-info mb-3"><i class="bi bi-clock-history me-2"></i>Chronological Behavior Timeline</h5>
+          <p class="text-muted small">Tracks what actions users took in response to recommendations (watered vs skipped vs fertilized).</p>
           <div class="list-group list-group-flush bg-transparent" id="adminActivityTimeline">
             <div class="text-center text-muted py-4">No logged user behaviors yet.</div>
           </div>
         </div>
 
-        <!-- Tab 4: Decision Logs -->
+        <!-- Tab 5: Crop Predictions Log -->
+        <div class="tab-pane fade" id="predictions-pane" role="tabpanel">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>User</th>
+                  <th>Nutrients (N-P-K)</th>
+                  <th>Soil pH</th>
+                  <th>Weather Context</th>
+                  <th>Recommended Crop</th>
+                </tr>
+              </thead>
+              <tbody id="predictionsTableBody">
+                <tr><td colspan="6" class="text-center text-muted py-4">No logged predictions found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 6: Disease Scans Log -->
+        <div class="tab-pane fade" id="scans-pane" role="tabpanel">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>User</th>
+                  <th>File Name</th>
+                  <th>Identified Disease</th>
+                  <th>Confidence Score</th>
+                </tr>
+              </thead>
+              <tbody id="scansTableBody">
+                <tr><td colspan="5" class="text-center text-muted py-4">No logged leaf scans found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 7: AI Decisions -->
         <div class="tab-pane fade" id="recs-pane" role="tabpanel">
           <div class="table-responsive">
             <table class="table table-dark table-hover align-middle mb-0">
@@ -185,7 +266,7 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="simulateFarmerId">
-        <p class="text-muted small">Simulating a rain event pushes precipitation data into the farmer's soil model, causing subsequent daily recommendations to automatically skip or reduce irrigation.</p>
+        <p class="text-muted small">Simulating a rain storm pushes rainfall precipitation data into the farmer's soil moisture calculation model, forcing subsequent daily suggestions to automatically skip or reduce irrigation.</p>
         <div class="mb-3">
           <label class="form-label">Rainfall Volume (mm)</label>
           <input type="number" id="rainAmountInput" class="form-control bg-dark text-light border-secondary" value="25.0" step="0.5" min="1">
@@ -222,29 +303,52 @@ async function loadAllAdminData() {
         const resStatus = await fetch('/api/phase5/admin/status');
         const statusData = await resStatus.json();
         if (statusData.success) {
-            document.getElementById('farmerCountVal').textContent = statusData.farmer_count;
-            document.getElementById('irrigationCountVal').textContent = statusData.total_irrigation_decisions;
-            document.getElementById('fertilizerCountVal').textContent = statusData.total_fertilizer_decisions;
-            document.getElementById('alertsCountVal').textContent = statusData.total_alerts_sent;
+            document.getElementById('farmerCountVal').textContent = statusData.profile_count;
+            document.getElementById('userCountVal').textContent = statusData.user_count;
+            document.getElementById('predictionsCountVal').textContent = statusData.predictions_count;
+            document.getElementById('scansCountVal').textContent = statusData.scans_count;
+            document.getElementById('priceCountVal').textContent = statusData.prices_count.toLocaleString();
+            
             document.getElementById('modeVal').textContent = statusData.mode;
             document.getElementById('healthVal').textContent = statusData.system_health;
         }
 
-        // 2. Farmers List
+        // 2. User Accounts List
+        const resUsers = await fetch('/api/phase5/admin/users');
+        const usersData = await resUsers.json();
+        if (usersData.success) {
+            renderUsersTable(usersData.users);
+        }
+
+        // 3. Farmers List
         const resFarmers = await fetch('/api/phase5/admin/farmers');
         const farmersData = await resFarmers.json();
         if (farmersData.success) {
             renderFarmersTable(farmersData.farmers);
         }
 
-        // 3. User Behaviors
+        // 4. User Behaviors
         const resActivities = await fetch('/api/phase5/admin/activities');
         const activitiesData = await resActivities.json();
         if (activitiesData.success) {
             renderActivitiesTimeline(activitiesData.activities);
         }
 
-        // 4. Decision Logs
+        // 5. Predictions Logs
+        const resPreds = await fetch('/api/phase5/admin/predictions');
+        const predsData = await resPreds.json();
+        if (predsData.success) {
+            renderPredictionsTable(predsData.predictions);
+        }
+
+        // 6. Disease Scans Logs
+        const resScans = await fetch('/api/phase5/admin/scans');
+        const scansData = await resScans.json();
+        if (scansData.success) {
+            renderScansTable(scansData.scans);
+        }
+
+        // 7. Decision Logs
         const resRecs = await fetch('/api/phase5/admin/recommendations');
         const recsData = await resRecs.json();
         if (recsData.success) {
@@ -256,12 +360,40 @@ async function loadAllAdminData() {
     }
 }
 
+function renderUsersTable(users) {
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '';
+    
+    if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No registered user profiles found.</td></tr>';
+        return;
+    }
+
+    users.forEach(u => {
+        const dateStr = new Date(u.created_at).toLocaleDateString();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="font-monospace text-muted small">USR-${u.id}</td>
+            <td><strong class="text-light">${u.name}</strong></td>
+            <td>${u.phone}</td>
+            <td>${u.city ? `${u.city}, ${u.state || ''}` : '—'} ${u.country ? `(${u.country})` : ''}</td>
+            <td class="small text-muted">${dateStr}</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteUserAccount(${u.id})" title="Wipe entire User Account & profiles">
+                    <i class="bi bi-trash-fill me-1"></i>Delete Account
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
 function renderFarmersTable(farmers) {
     const tbody = document.getElementById('farmersTableBody');
     tbody.innerHTML = '';
     
     if (!farmers || farmers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No registered farmer profiles found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No active farm setup profiles found.</td></tr>';
         return;
     }
 
@@ -296,8 +428,8 @@ function renderFarmersTable(farmers) {
                     <button class="btn btn-sm btn-outline-warning btn-action" onclick="openSimulateRainModal(${f.id})" title="Simulate Rain storm">
                         <i class="bi bi-cloud-rain-heavy-fill"></i> Rain
                     </button>
-                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteFarmerProfile(${f.id})" title="Remove Farmer Profile">
-                        <i class="bi bi-trash-fill"></i>
+                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteFarmerProfile(${f.id})" title="Remove Farm Profile Only">
+                        <i class="bi bi-trash-fill"></i> Setup
                     </button>
                 </div>
             </td>
@@ -348,6 +480,54 @@ function renderActivitiesTimeline(activities) {
             ${act.amount > 0 ? `<div class="text-success font-monospace" style="font-size: 11px;">Amount: ${act.amount.toLocaleString()}</div>` : ''}
         `;
         timeline.appendChild(item);
+    });
+}
+
+function renderPredictionsTable(preds) {
+    const tbody = document.getElementById('predictionsTableBody');
+    tbody.innerHTML = '';
+    
+    if (!preds || preds.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No logged predictions found.</td></tr>';
+        return;
+    }
+
+    preds.forEach(p => {
+        const dateStr = new Date(p.created_at).toLocaleDateString();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-muted small">${dateStr}</td>
+            <td><strong class="text-light">${p.name || 'Anonymous Farmer'}</strong></td>
+            <td class="font-monospace small text-info">N:${p.n} P:${p.p} K:${p.k} pH:${p.ph}</td>
+            <td class="small text-muted">${p.ph}</td>
+            <td class="small text-muted">${p.temperature}°C, ${p.humidity}% RH</td>
+            <td><span class="badge bg-success">${p.recommended_crop.toUpperCase()}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderScansTable(scans) {
+    const tbody = document.getElementById('scansTableBody');
+    tbody.innerHTML = '';
+    
+    if (!scans || scans.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No logged leaf scans found.</td></tr>';
+        return;
+    }
+
+    scans.forEach(s => {
+        const dateStr = new Date(s.created_at).toLocaleDateString();
+        const score = (s.confidence * 100).toFixed(1);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-muted small">${dateStr}</td>
+            <td><strong class="text-light">${s.name || 'Anonymous Farmer'}</strong></td>
+            <td class="text-truncate small text-info" style="max-width: 150px;" title="${s.image_filename}">${s.image_filename}</td>
+            <td><span class="badge bg-danger">${s.detected_disease}</span></td>
+            <td class="font-monospace text-warning fw-bold">${score}%</td>
+        `;
+        tbody.appendChild(tr);
     });
 }
 
@@ -421,7 +601,7 @@ async function submitSimulateRain() {
 }
 
 async function deleteFarmerProfile(farmerId) {
-    if (!confirm("Are you absolutely sure you want to delete this farmer's profile? This will wipe their setup, alert logs, and activity records.")) return;
+    if (!confirm("Delete only this farmer's setup profile? This retains their user account, but drops their Phase 5 setup details.")) return;
     
     try {
         const res = await fetch(`/api/phase5/admin/delete-farmer/${farmerId}`, { method: 'POST' });
@@ -429,7 +609,20 @@ async function deleteFarmerProfile(farmerId) {
         alert(data.message);
         loadAllAdminData();
     } catch (e) {
-        alert("Delete request failed.");
+        alert("Delete profile request failed.");
+    }
+}
+
+async function deleteUserAccount(userId) {
+    if (!confirm("DANGER: Wiping this User Account deletes their credentials, access tokens, farm profiles, and histories from the database. Proceed?")) return;
+    
+    try {
+        const res = await fetch(`/api/phase5/admin/delete-user/${userId}`, { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
+        loadAllAdminData();
+    } catch (e) {
+        alert("Delete user request failed.");
     }
 }
 </script>
