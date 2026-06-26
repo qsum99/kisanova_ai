@@ -257,3 +257,169 @@ def get_admin_status():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/farmers', methods=['GET'])
+def admin_get_farmers():
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        rows = conn.execute('''
+            SELECT fp.*, f.name, f.phone as auth_phone 
+            FROM farmer_profile fp 
+            JOIN farmers f ON fp.user_id = f.id
+            ORDER BY fp.created_at DESC
+        ''').fetchall()
+        conn.close()
+        return jsonify({"success": True, "farmers": [dict(r) for r in rows]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/activities', methods=['GET'])
+def admin_get_activities():
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        rows = conn.execute('''
+            SELECT fa.*, fp.crop_type, f.name 
+            FROM farmer_activity fa 
+            JOIN farmer_profile fp ON fa.farmer_id = fp.id 
+            JOIN farmers f ON fp.user_id = f.id 
+            ORDER BY fa.logged_at DESC LIMIT 50
+        ''').fetchall()
+        conn.close()
+        return jsonify({"success": True, "activities": [dict(r) for r in rows]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/recommendations', methods=['GET'])
+def admin_get_recommendations():
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        rows = conn.execute('''
+            SELECT il.*, fp.crop_type, f.name 
+            FROM irrigation_log il 
+            JOIN farmer_profile fp ON il.farmer_id = fp.id 
+            JOIN farmers f ON fp.user_id = f.id 
+            ORDER BY il.created_at DESC LIMIT 50
+        ''').fetchall()
+        conn.close()
+        
+        recommendations = []
+        for r in rows:
+            w = {}
+            try:
+                w = json.loads(r["weather_json"]) if r["weather_json"] else {}
+            except Exception:
+                pass
+            recommendations.append({
+                "id": r["id"],
+                "farmer_id": r["farmer_id"],
+                "name": r["name"],
+                "crop_type": r["crop_type"],
+                "action": r["action"],
+                "amount": r["amount_litres_per_ha"],
+                "water_saved": r["water_saved_litres"],
+                "reason": r["reason"],
+                "weather": w,
+                "created_at": r["created_at"]
+            })
+        return jsonify({"success": True, "recommendations": recommendations})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/simulate-rain', methods=['POST'])
+def admin_simulate_rain():
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    data = request.json
+    farmer_id = data.get("farmer_id")
+    amount = data.get("amount", 25.0)  # default 25mm rain
+
+    if not farmer_id:
+        return jsonify({"error": "Missing farmer_id"}), 400
+
+    try:
+        conn = get_db_connection()
+        
+        # Check if farmer profile exists
+        farmer = conn.execute("SELECT * FROM farmer_profile WHERE id = ?", (farmer_id,)).fetchone()
+        if not farmer:
+            conn.close()
+            return jsonify({"error": "Farmer profile not found"}), 404
+
+        conn.execute(
+            "INSERT INTO farmer_activity (farmer_id, activity_type, detail, amount) VALUES (?, ?, ?, ?)",
+            (farmer_id, "watered", f"Simulated Rain Event: {amount}mm of heavy rainfall", int(amount * 10000))
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": f"Successfully simulated {amount}mm rain for farmer {farmer_id}."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/delete-farmer/<int:farmer_id>', methods=['POST'])
+def admin_delete_farmer(farmer_id):
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        conn.execute("DELETE FROM farmer_profile WHERE id = ?", (farmer_id,))
+        conn.execute("DELETE FROM irrigation_log WHERE farmer_id = ?", (farmer_id,))
+        conn.execute("DELETE FROM fertilizer_log WHERE farmer_id = ?", (farmer_id,))
+        conn.execute("DELETE FROM ndvi_log WHERE farmer_id = ?", (farmer_id,))
+        conn.execute("DELETE FROM farmer_activity WHERE farmer_id = ?", (farmer_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": f"Deleted farmer profile {farmer_id}."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@phase5_bp.route('/phase5/admin/trigger-alert/<int:farmer_id>', methods=['POST'])
+def admin_trigger_alert(farmer_id):
+    if 'role' not in session or session['role'] != 'admin':
+        return jsonify({"error": "Forbidden"}), 403
+
+    try:
+        conn = get_db_connection()
+        farmer = conn.execute("SELECT * FROM farmer_profile WHERE id = ?", (farmer_id,)).fetchone()
+        conn.close()
+        if not farmer:
+            return jsonify({"error": "Farmer not found"}), 404
+
+        farmer_dict = dict(farmer)
+        
+        # Calculate daily parameters to construct alert
+        irr = get_irrigation_decision(
+            farmer_dict["id"], farmer_dict["lat"], farmer_dict["lon"],
+            farmer_dict["crop_type"], farmer_dict["soil_type"],
+            farmer_dict["planting_date"], farmer_dict.get("farm_size_ha", 1.0)
+        )
+        fert = get_fertilizer_decision(
+            farmer_dict["id"], farmer_dict["lat"], farmer_dict["lon"],
+            farmer_dict["crop_type"], farmer_dict["soil_type"],
+            farmer_dict["planting_date"]
+        )
+        ndvi = get_farm_ndvi(farmer_dict["crop_type"], farmer_dict["planting_date"])
+
+        success = send_farm_alert(farmer_dict, irr, fert, ndvi)
+        if success:
+            return jsonify({"success": True, "message": f"Successfully sent alert email to {farmer_dict['email']}!"})
+        else:
+            return jsonify({"success": False, "message": "Failed to send alert. Check SMTP configuration or target email address."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
