@@ -32,8 +32,8 @@
   <div id="mainContent" class="row d-none">
     <!-- Today's Decision -->
     <div class="col-md-8 mb-4">
-      <div class="card bg-dark border-secondary shadow h-100">
-        <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+      <div class="card premium-card shadow-lg h-100">
+        <div class="premium-card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0 text-info">Today's Recommendation</h5>
           <div>
             <button class="btn btn-sm btn-outline-warning me-1" id="sendAlertBtn" title="Email this alert">
@@ -48,37 +48,57 @@
       </div>
     </div>
 
-    <!-- Farm Stats -->
+    <!-- Farm Stats & Activities -->
     <div class="col-md-4 mb-4">
-      <div class="card bg-dark border-secondary shadow h-100">
-        <div class="card-header border-secondary">
-          <h5 class="mb-0 text-info">Farm Overview</h5>
+      <div class="d-flex flex-column gap-4">
+        <!-- Farm Overview Card -->
+        <div class="card premium-card shadow-lg">
+          <div class="premium-card-header">
+            <h5 class="mb-0 text-info">Farm Overview</h5>
+          </div>
+          <div class="card-body text-center d-flex flex-column justify-content-center py-4">
+            <i class="bi bi-droplet-fill text-primary" style="font-size: 3rem;"></i>
+            <h2 class="display-6 fw-bold text-primary mt-2 mb-0" id="waterSavedVal">0</h2>
+            <p class="text-muted small">Litres Saved (Total)</p>
+            <hr class="border-secondary my-2 opacity-25">
+            <div class="d-flex justify-content-between text-start small text-muted">
+              <span>Growth Stage:</span>
+              <span id="growthStageVal" class="text-light fw-bold">--</span>
+            </div>
+            <div class="d-flex justify-content-between text-start small text-muted mt-1">
+              <span>ET₀ (mm/day):</span>
+              <span id="etoVal" class="text-info fw-bold">--</span>
+            </div>
+            <div class="d-flex justify-content-between text-start small text-muted mt-1">
+              <span>Crop Kc:</span>
+              <span id="kcVal" class="text-warning fw-bold">--</span>
+            </div>
+            <div class="d-flex justify-content-between text-start small text-muted mt-1">
+              <span>Soil Moisture:</span>
+              <span id="moistureVal" class="text-success fw-bold">--</span>
+            </div>
+          </div>
         </div>
-        <div class="card-body text-center d-flex flex-column justify-content-center">
-          <i class="bi bi-droplet-fill text-primary" style="font-size: 3rem;"></i>
-          <h2 class="display-5 fw-bold text-primary mt-2 mb-0" id="waterSavedVal">0</h2>
-          <p class="text-muted">Litres Saved (Total)</p>
-          <hr class="border-secondary">
-          <div class="d-flex justify-content-between text-start small text-muted">
-            <span>Growth Stage:</span>
-            <span id="growthStageVal" class="text-light fw-bold">--</span>
+
+        <!-- Farmer Activity Log Card -->
+        <div class="card premium-card shadow-lg">
+          <div class="premium-card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-info"><i class="bi bi-clock-history me-2"></i>My Activity Log</h5>
+            <span class="badge bg-secondary" id="activityCount">0</span>
           </div>
-          <div class="d-flex justify-content-between text-start small text-muted mt-1">
-            <span>ET₀ (mm/day):</span>
-            <span id="etoVal" class="text-info fw-bold">--</span>
-          </div>
-          <div class="d-flex justify-content-between text-start small text-muted mt-1">
-            <span>Crop Kc:</span>
-            <span id="kcVal" class="text-warning fw-bold">--</span>
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush bg-transparent" id="activityList" style="max-height: 250px; overflow-y: auto;">
+              <!-- Populated dynamically -->
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- History Table -->
-    <div class="col-12">
-      <div class="card bg-dark border-secondary shadow">
-        <div class="card-header border-secondary">
+    <div class="col-12 mt-4">
+      <div class="card premium-card shadow-lg">
+        <div class="premium-card-header">
           <h5 class="mb-0 text-info">Irrigation History (from Database)</h5>
         </div>
         <div class="card-body p-0">
@@ -106,6 +126,8 @@
 
 {% block scripts %}
 <script>
+let currentDecisionAmt = 0;
+
 document.addEventListener('DOMContentLoaded', () => {
     loadIrrigationData();
 
@@ -148,15 +170,19 @@ async function loadIrrigationData() {
         document.getElementById('mainContent').classList.remove('d-none');
 
         const d = data.decision;
+        currentDecisionAmt = d.amount_litres_per_ha;
+        
         document.getElementById('farmContextBadge').innerHTML =
             `🌾 ${data.crop_type.charAt(0).toUpperCase() + data.crop_type.slice(1)} | ${data.farm_size_ha} ha | ${d.weather.source}`;
         document.getElementById('waterSavedVal').textContent = data.water_saved_total.toLocaleString();
         document.getElementById('growthStageVal').textContent = d.growth_stage;
         document.getElementById('etoVal').textContent = d.eto_mm;
         document.getElementById('kcVal').textContent = d.kc;
+        document.getElementById('moistureVal').textContent = `${d.soil_moisture_pct || 30}%`;
 
         renderDecision(d);
         renderHistory(data.history);
+        renderActivities(data.activities);
     } catch (error) {
         console.error("Error:", error);
     }
@@ -179,6 +205,31 @@ function renderDecision(d) {
             ${d.total_litres ? `<span class="text-muted ms-2">(${d.total_litres.toLocaleString()} L total)</span>` : ''}
         </div>
         <p class="fs-5 text-light">${d.reason}</p>
+        
+        <!-- Feedback Form inside Decision card -->
+        <div class="bg-dark p-3 rounded border border-secondary mb-3 mt-4">
+            <h6 class="text-success mb-2"><i class="bi bi-calendar-check me-2"></i>Did you water today?</h6>
+            <p class="text-muted small mb-3">Logging your action updates the soil moisture model to keep recommendations accurate.</p>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <button class="btn btn-primary btn-sm px-3" onclick="logFarmerActivity('watered', ${d.amount_litres_per_ha}, 'Watered recommended amount')">
+                    💦 Yes, watered (${d.amount_litres_per_ha.toLocaleString()} L/ha)
+                </button>
+                <button class="btn btn-outline-warning btn-sm px-3" onclick="logFarmerActivity('skipped', 0, 'Skipped watering today')">
+                    🚫 I skipped watering today
+                </button>
+                <button class="btn btn-outline-info btn-sm px-3" onclick="toggleCustomWaterInput()">
+                    ✏️ Log other amount
+                </button>
+            </div>
+            <div id="customWaterDiv" class="d-none mt-2 p-2 border border-secondary rounded">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-dark text-light border-secondary">Amount (L/ha)</span>
+                    <input type="number" id="customWaterAmt" class="form-control bg-dark text-light border-secondary" placeholder="e.g. 10000" min="0">
+                    <button class="btn btn-info text-dark" onclick="submitCustomWater()">Submit</button>
+                </div>
+            </div>
+        </div>
+
         <hr class="border-secondary my-3">
         <div class="row text-center g-2">
             <div class="col-3">
@@ -199,6 +250,43 @@ function renderDecision(d) {
             </div>
         </div>
     `;
+}
+
+function toggleCustomWaterInput() {
+    const el = document.getElementById('customWaterDiv');
+    el.classList.toggle('d-none');
+}
+
+async function submitCustomWater() {
+    const amt = parseFloat(document.getElementById('customWaterAmt').value);
+    if (isNaN(amt) || amt < 0) {
+        alert("Please enter a valid watering amount.");
+        return;
+    }
+    await logFarmerActivity('watered', amt, `Watered custom amount: ${amt.toLocaleString()} L/ha`);
+}
+
+async function logFarmerActivity(activityType, amount, detail) {
+    try {
+        const res = await fetch('/api/phase5/log-activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                activity_type: activityType,
+                amount: amount,
+                detail: detail
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
+            await loadIrrigationData();
+        } else {
+            alert("Error: " + data.error);
+        }
+    } catch (e) {
+        alert("Failed to log activity.");
+    }
 }
 
 function renderHistory(history) {
@@ -224,5 +312,37 @@ function renderHistory(history) {
         tbody.appendChild(tr);
     });
 }
+
+function renderActivities(activities) {
+    const container = document.getElementById('activityList');
+    const countBadge = document.getElementById('activityCount');
+    container.innerHTML = '';
+    
+    if (!activities || activities.length === 0) {
+        container.innerHTML = '<div class="p-3 text-center text-muted small">No logs yet. Did you water today?</div>';
+        countBadge.textContent = '0';
+        return;
+    }
+    
+    countBadge.textContent = activities.length;
+    
+    activities.forEach(act => {
+        const isWater = act.activity_type === 'watered';
+        const icon = isWater ? 'bi-droplet-fill text-primary' : 'bi-slash-circle text-warning';
+        const item = document.createElement('div');
+        item.className = 'list-group-item bg-transparent text-light border-0 p-3 mb-2 activity-item small';
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold"><i class="bi ${icon} me-2"></i>${act.activity_type.toUpperCase()}</span>
+                <span class="text-muted text-end" style="font-size: 11px;">${new Date(act.date).toLocaleDateString()} ${new Date(act.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+            <div class="text-light">${act.detail}</div>
+            ${act.amount > 0 ? `<div class="text-info mt-1 font-monospace">${act.amount.toLocaleString()} L/ha</div>` : ''}
+        `;
+        container.appendChild(item);
+    });
+}
 </script>
 {% endblock %}
+
+

@@ -31,10 +31,10 @@
 
     <!-- Current Recommendation -->
     <div class="col-lg-8">
-      <div class="card bg-dark border-success shadow h-100">
-        <div class="card-header bg-success text-dark d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 fw-bold"><i class="bi bi-stars me-2"></i>Current Recommendation (ICAR)</h5>
-          <span class="badge bg-dark text-light" id="growthStageBadge">--</span>
+      <div class="card premium-card shadow-lg h-100">
+        <div class="premium-card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 fw-bold text-success"><i class="bi bi-stars me-2"></i>Current Recommendation (ICAR)</h5>
+          <span class="badge bg-dark text-light border border-secondary" id="growthStageBadge">--</span>
         </div>
         <div class="card-body">
           <h3 class="text-success mb-2" id="fertTypeVal">--</h3>
@@ -98,6 +98,39 @@
 
           <div id="alertsContainer" class="mt-3"></div>
 
+          <!-- Feedback Form inside Recommendation card -->
+          <div class="bg-dark p-3 rounded border border-secondary mb-3 mt-4">
+            <h6 class="text-success mb-2"><i class="bi bi-calendar-check me-2"></i>Did you apply fertilizer today?</h6>
+            <p class="text-muted small mb-3">Logging your nutrient applications helps monitor soil productivity and avoid excess fertilization.</p>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button class="btn btn-success btn-sm px-3" id="applyFertBtn" onclick="applyRecommendedFertilizer()">
+                🧪 Yes, applied recommended split dose
+              </button>
+              <button class="btn btn-outline-info btn-sm px-3" onclick="toggleCustomFertInput()">
+                ✏️ Log custom application
+              </button>
+            </div>
+            
+            <div id="customFertDiv" class="d-none mt-2 p-3 border border-secondary rounded">
+              <h6 class="text-info mb-3">Enter Applied Nutrients (kg/ha):</h6>
+              <div class="row g-2 mb-3">
+                <div class="col-4">
+                  <label class="form-label small text-muted">Nitrogen (N)</label>
+                  <input type="number" id="customFertN" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="e.g. 20" min="0">
+                </div>
+                <div class="col-4">
+                  <label class="form-label small text-muted">Phosphorus (P)</label>
+                  <input type="number" id="customFertP" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="e.g. 10" min="0">
+                </div>
+                <div class="col-4">
+                  <label class="form-label small text-muted">Potassium (K)</label>
+                  <input type="number" id="customFertK" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="e.g. 10" min="0">
+                </div>
+              </div>
+              <button class="btn btn-info btn-sm text-dark px-3" onclick="submitCustomFert()">Submit Log</button>
+            </div>
+          </div>
+
           <div class="bg-dark border border-secondary p-3 rounded mt-3">
             <strong><i class="bi bi-info-circle me-2 text-muted"></i>ICAR Notes:</strong>
             <span class="text-muted" id="icarNotesVal">--</span>
@@ -106,32 +139,48 @@
       </div>
     </div>
 
-    <!-- Soil & Crop Info -->
+    <!-- Soil & Crop Info & Activities -->
     <div class="col-lg-4">
-      <div class="card bg-dark border-secondary shadow h-100">
-        <div class="card-header border-secondary">
-          <h5 class="mb-0 text-info"><i class="bi bi-layers-fill me-2"></i>Crop & Soil Profile</h5>
+      <div class="d-flex flex-column gap-4">
+        <!-- Profile Card -->
+        <div class="card premium-card shadow-lg">
+          <div class="premium-card-header">
+            <h5 class="mb-0 text-info"><i class="bi bi-layers-fill me-2"></i>Crop & Soil Profile</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush bg-transparent">
+              <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+                <span>Crop</span>
+                <span class="text-success fw-bold" id="cropVal">--</span>
+              </li>
+              <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+                <span>Soil Type</span>
+                <span class="text-warning fw-bold" id="soilVal">--</span>
+              </li>
+              <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+                <span>Growth Stage</span>
+                <span class="text-info fw-bold" id="stageVal">--</span>
+              </li>
+              <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+                <span>Day</span>
+                <span class="text-light" id="dayVal">--</span>
+              </li>
+            </ul>
+            <p class="text-muted small mt-4 mb-0"><i class="bi bi-book me-1"></i>Recommendations follow ICAR guidelines specific to your crop × soil combination.</p>
+          </div>
         </div>
-        <div class="card-body">
-          <ul class="list-group list-group-flush bg-transparent">
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
-              <span>Crop</span>
-              <span class="text-success fw-bold" id="cropVal">--</span>
-            </li>
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
-              <span>Soil Type</span>
-              <span class="text-warning fw-bold" id="soilVal">--</span>
-            </li>
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
-              <span>Growth Stage</span>
-              <span class="text-info fw-bold" id="stageVal">--</span>
-            </li>
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
-              <span>Day</span>
-              <span class="text-light" id="dayVal">--</span>
-            </li>
-          </ul>
-          <p class="text-muted small mt-4 mb-0"><i class="bi bi-book me-1"></i>Recommendations follow ICAR (Indian Council of Agricultural Research) guidelines specific to your crop × soil combination.</p>
+
+        <!-- Activity Timeline -->
+        <div class="card premium-card shadow-lg">
+          <div class="premium-card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-info"><i class="bi bi-clock-history me-2"></i>My Activity Log</h5>
+            <span class="badge bg-secondary" id="activityCount">0</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush bg-transparent" id="activityList" style="max-height: 250px; overflow-y: auto;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -141,6 +190,8 @@
 
 {% block scripts %}
 <script>
+let recN = 0, recP = 0, recK = 0, recType = "";
+
 document.addEventListener('DOMContentLoaded', () => { loadFertilizerData(); });
 
 async function loadFertilizerData() {
@@ -156,6 +207,11 @@ async function loadFertilizerData() {
 
         document.getElementById('mainContent').classList.remove('d-none');
         const rec = data.decision;
+
+        recN = rec.apply_n_kg_ha;
+        recP = rec.apply_p_kg_ha;
+        recK = rec.apply_k_kg_ha;
+        recType = rec.fertilizer_type;
 
         document.getElementById('farmContextBadge').innerHTML =
             `🌾 ${data.crop_type.charAt(0).toUpperCase() + data.crop_type.slice(1)} | 🏜️ ${data.soil_type.charAt(0).toUpperCase() + data.soil_type.slice(1)} Soil`;
@@ -195,9 +251,92 @@ async function loadFertilizerData() {
                     </div>`;
             });
         }
+
+        renderActivities(data.activities);
     } catch (error) {
         console.error("Error:", error);
     }
+}
+
+function toggleCustomFertInput() {
+    const el = document.getElementById('customFertDiv');
+    el.classList.toggle('d-none');
+}
+
+async function applyRecommendedFertilizer() {
+    const detail = `Applied recommended split dose of ${recType} (N:${recN} P:${recP} K:${recK} kg/ha)`;
+    const totalAmt = recN + recP + recK;
+    await logFertilizerActivity(totalAmt, detail);
+}
+
+async function submitCustomFert() {
+    const n = parseFloat(document.getElementById('customFertN').value) || 0;
+    const p = parseFloat(document.getElementById('customFertP').value) || 0;
+    const k = parseFloat(document.getElementById('customFertK').value) || 0;
+    
+    if (n < 0 || p < 0 || k < 0) {
+        alert("Nutrient values cannot be negative.");
+        return;
+    }
+    
+    const detail = `Applied custom fertilizer: N:${n} P:${p} K:${k} kg/ha`;
+    const totalAmt = n + p + k;
+    await logFertilizerActivity(totalAmt, detail);
+}
+
+async function logFertilizerActivity(amount, detail) {
+    try {
+        const res = await fetch('/api/phase5/log-activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                activity_type: 'fertilized',
+                amount: amount,
+                detail: detail
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
+            await loadFertilizerData();
+            document.getElementById('customFertDiv').classList.add('d-none');
+        } else {
+            alert("Error: " + data.error);
+        }
+    } catch (e) {
+        alert("Failed to log activity.");
+    }
+}
+
+function renderActivities(activities) {
+    const container = document.getElementById('activityList');
+    const countBadge = document.getElementById('activityCount');
+    container.innerHTML = '';
+    
+    // Filter activities to fertilized only
+    const fertActs = activities ? activities.filter(a => a.activity_type === 'fertilized') : [];
+    
+    if (fertActs.length === 0) {
+        container.innerHTML = '<div class="p-3 text-center text-muted small">No logs yet. Log your fertilizer applications here.</div>';
+        countBadge.textContent = '0';
+        return;
+    }
+    
+    countBadge.textContent = fertActs.length;
+    
+    fertActs.forEach(act => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item bg-transparent text-light border-0 p-3 mb-2 activity-item small';
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-success"><i class="bi bi-heptagon-half me-2"></i>${act.activity_type.toUpperCase()}</span>
+                <span class="text-muted text-end" style="font-size: 11px;">${new Date(act.date).toLocaleDateString()}</span>
+            </div>
+            <div class="text-light">${act.detail}</div>
+            ${act.amount > 0 ? `<div class="text-info mt-1 font-monospace">${act.amount.toLocaleString()} kg/ha total nutrients</div>` : ''}
+        `;
+        container.appendChild(item);
+    });
 }
 </script>
 {% endblock %}

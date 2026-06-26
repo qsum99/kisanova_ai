@@ -35,16 +35,16 @@
 
     <!-- Health Overview -->
     <div class="col-md-4">
-      <div class="card bg-dark border-secondary shadow mb-4">
-        <div class="card-header border-secondary text-info">
-          <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Current Health</h5>
+      <div class="card premium-card mb-4 shadow-lg">
+        <div class="premium-card-header text-info">
+          <h5 class="mb-0"><i class="bi bi-activity me-2 text-primary"></i>Current Health</h5>
         </div>
-        <div class="card-body text-center">
-          <h1 class="display-3 fw-bold mb-0" id="ndviScoreVal">--</h1>
-          <p class="text-muted mb-2">NDVI Score (0.0 to 1.0)</p>
-          <span class="badge fs-5 px-3 py-2 rounded-pill" id="healthStatusBadge">--</span>
+        <div class="card-body text-center py-4">
+          <h1 class="display-3 fw-extrabold mb-1" id="ndviScoreVal">--</h1>
+          <p class="text-muted small mb-3">NDVI Score (0.0 to 1.0)</p>
+          <span class="badge fs-6 px-3 py-2 rounded-pill shadow-sm" id="healthStatusBadge">--</span>
 
-          <hr class="border-secondary my-3">
+          <hr class="border-secondary my-3 opacity-25">
           <div class="d-flex justify-content-between text-muted small">
             <span>Growth Stage:</span>
             <span class="text-light fw-bold" id="growthStageVal">--</span>
@@ -53,32 +53,32 @@
             <span>Crop Kc:</span>
             <span class="text-warning fw-bold" id="kcVal">--</span>
           </div>
-          <div class="progress mt-3" style="height: 8px; background-color: #333;">
-            <div id="growthProgress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+          <div class="premium-progress mt-3">
+            <div id="growthProgress" class="premium-progress-bar" style="width: 0%"></div>
           </div>
-          <small class="text-muted" id="progressLabel">--</small>
+          <small class="text-muted d-block mt-2" id="progressLabel">--</small>
         </div>
       </div>
 
       <!-- Harvest Estimator -->
-      <div class="card bg-dark border-secondary shadow">
-        <div class="card-header border-secondary text-warning">
-          <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Harvest Estimator</h5>
+      <div class="card premium-card shadow-lg">
+        <div class="premium-card-header text-warning">
+          <h5 class="mb-0"><i class="bi bi-calendar-check me-2 text-warning"></i>Harvest Estimator</h5>
         </div>
-        <div class="card-body text-center">
-          <h2 class="text-warning mb-1" id="daysRemainingVal">--</h2>
-          <p class="text-muted mb-3">Days Remaining</p>
-          <div class="bg-dark border border-secondary p-2 rounded text-start small mb-2">
+        <div class="card-body text-center py-4">
+          <h2 class="text-warning display-6 fw-bold mb-1" id="daysRemainingVal">--</h2>
+          <p class="text-muted small mb-3">Days Remaining</p>
+          <div class="bg-dark bg-opacity-50 border border-secondary p-2.5 rounded text-start small mb-2 d-flex justify-content-between">
             <span class="text-muted">Estimated Harvest:</span>
-            <span class="text-light float-end" id="harvestDateVal">--</span>
+            <span class="text-light fw-bold" id="harvestDateVal">--</span>
           </div>
-          <div class="bg-dark border border-secondary p-2 rounded text-start small mb-2">
+          <div class="bg-dark bg-opacity-50 border border-secondary p-2.5 rounded text-start small mb-2 d-flex justify-content-between">
             <span class="text-muted">Crop Duration:</span>
-            <span class="text-light float-end" id="durationVal">--</span>
+            <span class="text-light fw-bold" id="durationVal">--</span>
           </div>
-          <div class="bg-dark border border-secondary p-2 rounded text-start small">
+          <div class="bg-dark bg-opacity-50 border border-secondary p-2.5 rounded text-start small d-flex justify-content-between">
             <span class="text-muted">Planted On:</span>
-            <span class="text-light float-end" id="plantedDateVal">--</span>
+            <span class="text-light fw-bold" id="plantedDateVal">--</span>
           </div>
         </div>
       </div>
@@ -86,9 +86,12 @@
 
     <!-- Chart & Info -->
     <div class="col-md-8">
-      <div class="card bg-dark border-secondary shadow mb-4">
-        <div class="card-header border-secondary">
-          <h5 class="mb-0 text-info"><i class="bi bi-graph-up me-2"></i>NDVI Trend (from Database)</h5>
+      <div class="card premium-card mb-4 shadow-lg">
+        <div class="premium-card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 text-info"><i class="bi bi-graph-up me-2 text-info"></i>NDVI Trend Analysis</h5>
+          <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 py-1 px-2.5 small">
+            <i class="bi bi-shield-fill-check me-1"></i>Target Band Active
+          </span>
         </div>
         <div class="card-body">
           <div style="height: 300px;">
@@ -98,12 +101,12 @@
       </div>
 
       <!-- Growth Stage Timeline -->
-      <div class="card bg-dark border-secondary shadow">
-        <div class="card-header border-secondary">
-          <h5 class="mb-0 text-info"><i class="bi bi-signpost-split me-2"></i>Crop Health Explanation</h5>
+      <div class="card premium-card shadow-lg">
+        <div class="premium-card-header">
+          <h5 class="mb-0 text-info"><i class="bi bi-signpost-split me-2 text-cyan"></i>Crop Health Assessment</h5>
         </div>
         <div class="card-body" id="healthExplanation">
-          <p class="text-muted">Loading...</p>
+          <p class="text-muted">Loading explanation...</p>
         </div>
       </div>
     </div>
@@ -178,11 +181,12 @@ async function loadHealthData() {
 }
 
 function renderChart(history) {
-    const ctx = document.getElementById('ndviChart').getContext('2d');
+    const canvas = document.getElementById('ndviChart');
+    const ctx = canvas.getContext('2d');
     if (ndviChartInstance) ndviChartInstance.destroy();
 
     if (!history || history.length === 0) {
-        ctx.font = '16px Inter'; ctx.fillStyle = '#666';
+        ctx.font = '16px Inter'; ctx.fillStyle = '#94a3b8';
         ctx.fillText('NDVI history will appear after multiple visits', 50, 150);
         return;
     }
@@ -190,6 +194,12 @@ function renderChart(history) {
     const sorted = history.sort((a, b) => new Date(a.date) - new Date(b.date));
     const labels = sorted.map(d => new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
     const values = sorted.map(d => d.ndvi_score);
+
+    // Create a beautiful premium gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, 'rgba(74, 222, 128, 0.3)');
+    gradient.addColorStop(0.6, 'rgba(34, 211, 238, 0.08)');
+    gradient.addColorStop(1, 'rgba(11, 17, 32, 0)');
 
     ndviChartInstance = new Chart(ctx, {
         type: 'line',
@@ -199,25 +209,107 @@ function renderChart(history) {
                 label: 'NDVI Score',
                 data: values,
                 borderColor: '#4ade80',
-                backgroundColor: 'rgba(74, 222, 128, 0.1)',
-                borderWidth: 3,
+                backgroundColor: gradient,
+                borderWidth: 4,
                 pointBackgroundColor: '#22d3ee',
-                pointRadius: 5,
+                pointBorderColor: '#0b1120',
+                pointBorderWidth: 2.5,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#22d3ee',
+                pointHoverBorderColor: '#0b1120',
+                pointHoverBorderWidth: 3,
                 fill: true,
-                tension: 0.3
+                tension: 0.35
             }]
         },
         options: {
-            responsive: true, maintainAspectRatio: false,
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             scales: {
-                y: { min: 0, max: 1, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } },
-                x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } }
+                y: {
+                    min: 0,
+                    max: 1,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.04)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { family: 'Inter', size: 11 },
+                        stepSize: 0.2
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { family: 'Inter', size: 11 }
+                    }
+                }
             },
             plugins: {
                 legend: { display: false },
-                tooltip: { callbacks: { label: ctx => `NDVI: ${ctx.parsed.y.toFixed(3)}` } }
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleColor: '#f8fafc',
+                    titleFont: { family: 'Inter', size: 13, weight: 'bold' },
+                    bodyColor: '#e2e8f0',
+                    bodyFont: { family: 'Inter', size: 12 },
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: ctx => `🌾 NDVI Score: ${ctx.parsed.y.toFixed(3)}`
+                    }
+                }
             }
-        }
+        },
+        plugins: [{
+            id: 'optimalBand',
+            beforeDraw: (chart) => {
+                const ctx = chart.ctx;
+                const yAxis = chart.scales.y;
+                const xAxis = chart.scales.x;
+                
+                // Fetch pixel values for optimal range (0.60 to 0.85)
+                const yTop = yAxis.getPixelForValue(0.85);
+                const yBottom = yAxis.getPixelForValue(0.60);
+                
+                ctx.save();
+                
+                // Draw optimal range background band
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.035)';
+                ctx.fillRect(xAxis.left, yTop, xAxis.width, yBottom - yTop);
+                
+                // Draw dotted lines at boundaries
+                ctx.strokeStyle = 'rgba(74, 222, 128, 0.18)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                
+                ctx.beginPath();
+                ctx.moveTo(xAxis.left, yTop);
+                ctx.lineTo(xAxis.right, yTop);
+                ctx.moveTo(xAxis.left, yBottom);
+                ctx.lineTo(xAxis.right, yBottom);
+                ctx.stroke();
+                
+                // Text label for target band
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
+                ctx.font = '10px Inter';
+                ctx.fillText('Optimal Range (0.60 - 0.85)', xAxis.left + 10, yTop + 14);
+                
+                ctx.restore();
+            }
+        }]
     });
 }
 </script>

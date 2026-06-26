@@ -120,6 +120,17 @@ def init_db():
         )
     ''')
     
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS farmer_activity (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            farmer_id INTEGER NOT NULL,
+            activity_type TEXT NOT NULL,
+            detail TEXT,
+            amount REAL DEFAULT 0,
+            logged_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     conn.close()
     print(f"[Database] Initialized SQLite DB at {DB_PATH}")

@@ -9,7 +9,8 @@ from app.services.smart_farm_service import (
     get_irrigation_decision, get_irrigation_history, get_total_water_saved,
     get_fertilizer_decision,
     get_farm_ndvi, get_ndvi_history,
-    send_farm_alert, get_growth_info
+    send_farm_alert, get_growth_info,
+    get_farmer_activity_history
 )
 
 phase5_bp = Blueprint('phase5', __name__)
@@ -90,12 +91,14 @@ def get_irrigation_data():
     )
     history = get_irrigation_history(farmer["id"], limit=10)
     water_saved = get_total_water_saved(farmer["id"])
+    activities = get_farmer_activity_history(farmer["id"], limit=10)
 
     return jsonify({
         "success": True,
         "decision": decision,
         "history": history,
         "water_saved_total": water_saved,
+        "activities": activities,
         "crop_type": farmer["crop_type"],
         "farm_size_ha": farmer.get("farm_size_ha", 1.0)
     })
@@ -116,10 +119,12 @@ def get_fertilizer_data():
         farmer["crop_type"], farmer["soil_type"],
         farmer["planting_date"]
     )
+    activities = get_farmer_activity_history(farmer["id"], limit=10)
 
     return jsonify({
         "success": True,
         "decision": decision,
+        "activities": activities,
         "crop_type": farmer["crop_type"],
         "soil_type": farmer["soil_type"]
     })
@@ -195,6 +200,37 @@ def send_alert():
         return jsonify({"success": True, "message": f"Alert email sent to {farmer['email']}!"})
     else:
         return jsonify({"success": False, "message": "Email could not be sent. Check SMTP settings or provide a valid email in Farm Setup."})
+
+
+@phase5_bp.route('/phase5/log-activity', methods=['POST'])
+def log_activity():
+    if 'user' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session.get("user", {}).get("id")
+    farmer = _get_farmer_profile(user_id)
+    if not farmer:
+        return jsonify({"error": "Farm not set up."}), 400
+
+    data = request.json
+    activity_type = data.get("activity_type")  # e.g., 'watered', 'skipped', 'fertilized'
+    detail = data.get("detail", "")
+    amount = data.get("amount", 0.0)
+
+    if not activity_type:
+        return jsonify({"error": "Missing activity_type"}), 400
+
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO farmer_activity (farmer_id, activity_type, detail, amount) VALUES (?, ?, ?, ?)",
+            (farmer["id"], activity_type, detail, amount)
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": f"Successfully logged {activity_type} activity."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @phase5_bp.route('/phase5/admin/status', methods=['GET'])

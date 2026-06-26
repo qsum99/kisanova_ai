@@ -199,14 +199,82 @@ def get_farm_ndvi(crop_type, planting_date_str):
 
 
 # ═══════════════════════════════════════════════════════════
-# 4. IRRIGATION ENGINE — FAO-56 with crop + soil + weather
+# 4. IRRIGATION ENGINE — FAO-56 with soil moisture tracking
 # ═══════════════════════════════════════════════════════════
+def _estimate_soil_moisture(farmer_id, soil_type, weather):
+    """
+    Estimate current soil moisture (0-100%) based on:
+    - What the farmer actually did (logged activities)
+    - Recent rainfall
+    - Soil type drainage rate
+    - Time since last watering
+    
+    This is the KEY feedback loop — if farmer watered yesterday,
+    soil still has moisture today, so we reduce the recommendation.
+    """
+    # Soil drainage rates (% moisture lost per day without rain/irrigation)
+    drainage_rates = {
+        "black": 5,      # clay retains water, slow drainage
+        "alluvial": 8,
+        "red": 12,       # drains fast
+        "laterite": 15,  # very fast drainage
+        "coastal": 18,
+        "default": 10
+    }
+    drain_rate = drainage_rates.get(soil_type, 10)
+    
+    # Start with a baseline
+    moisture = 30  # assume 30% baseline
+    
+    try:
+        conn = get_db_connection()
+        
+        # Check: did the farmer log any watering in the last 3 days?
+        activities = conn.execute(
+            """SELECT activity_type, amount, logged_at FROM farmer_activity 
+               WHERE farmer_id = ? AND activity_type IN ('watered', 'irrigated', 'skipped')
+               AND logged_at >= datetime('now', '-3 days')
+               ORDER BY logged_at DESC""",
+            (farmer_id,)
+        ).fetchall()
+        conn.close()
+        
+        if activities:
+            for act in activities:
+                act_type = act["activity_type"]
+                hours_ago = max(1, (datetime.now() - datetime.strptime(act["logged_at"], "%Y-%m-%d %H:%M:%S")).total_seconds() / 3600)
+                days_ago = hours_ago / 24
+                
+                if act_type in ("watered", "irrigated"):
+                    # Farmer watered — soil got wet, then drains over time
+                    added_moisture = max(0, 50 - (drain_rate * days_ago))
+                    moisture += added_moisture
+                elif act_type == "skipped":
+                    # Farmer skipped — soil is drier
+                    moisture -= drain_rate * days_ago
+    except Exception as e:
+        print(f"[SmartFarm] Moisture estimation error: {e}")
+    
+    # Add rainfall contribution
+    recent_rain = weather.get("recent_rain_mm", 0)
+    if recent_rain > 0:
+        # 1mm rain ≈ 3% soil moisture boost (rough estimation)
+        moisture += recent_rain * 3
+    
+    # Clamp to 0-100
+    moisture = max(0, min(100, round(moisture)))
+    return moisture
+
+
 def get_irrigation_decision(farmer_id, lat, lon, crop_type, soil_type, planting_date, farm_size_ha):
-    """Production-grade irrigation decision using FAO-56 ET₀."""
+    """Production-grade irrigation decision using FAO-56 ET₀ + soil moisture feedback."""
     weather = get_farm_weather(lat, lon)
     growth = get_growth_info(crop_type, planting_date)
     kc = growth["kc"]
     soil_factor = SOIL_WATER_FACTOR.get(soil_type, 1.0)
+
+    # Estimate soil moisture from farmer's recent activity
+    soil_moisture = _estimate_soil_moisture(farmer_id, soil_type, weather)
 
     # FAO-56 Hargreaves simplified ET₀ (mm/day)
     T = weather["temperature"]
@@ -220,14 +288,14 @@ def get_irrigation_decision(farmer_id, lat, lon, crop_type, soil_type, planting_
     # Crop evapotranspiration
     etc = round(eto * kc, 2)  # mm/day
     
-    # Adjust for soil
+    # Adjust for soil type
     etc_adj = round(etc * soil_factor, 2)
     
-    # Convert mm → litres per hectare (1mm = 10,000 L/ha)
+    # Convert mm to litres per hectare (1mm = 10,000 L/ha)
     litres_per_ha = int(etc_adj * 10000)
     total_litres = int(litres_per_ha * farm_size_ha)
 
-    # Decision logic
+    # Decision logic — now considers soil moisture!
     rain_prob = weather["rain_probability"]
     recent_rain = weather.get("recent_rain_mm", 0)
 
@@ -239,6 +307,27 @@ def get_irrigation_decision(farmer_id, lat, lon, crop_type, soil_type, planting_
             "water_saved_litres": total_litres,
             "reason": f"Crop has reached maturity ({growth['stage_name']}). Stop irrigation to prepare for harvest.",
             "urgency": "low"
+        }
+    elif soil_moisture > 70:
+        # Farmer already watered recently — soil is still wet
+        decision = {
+            "action": "skip",
+            "amount_litres_per_ha": 0,
+            "total_litres": 0,
+            "water_saved_litres": total_litres,
+            "reason": f"Soil moisture is high ({soil_moisture}%) — you watered recently or it rained. No irrigation needed today. Check again tomorrow.",
+            "urgency": "low"
+        }
+    elif soil_moisture > 50:
+        # Soil still has some moisture from yesterday
+        reduced = int(litres_per_ha * 0.5)
+        decision = {
+            "action": "reduce",
+            "amount_litres_per_ha": reduced,
+            "total_litres": int(reduced * farm_size_ha),
+            "water_saved_litres": total_litres - int(reduced * farm_size_ha),
+            "reason": f"Soil still has moisture ({soil_moisture}%) from recent watering/rain. Apply only 50% — {reduced:,} L/ha is enough today.",
+            "urgency": "normal"
         }
     elif rain_prob > 70 and recent_rain > 5:
         decision = {
@@ -266,7 +355,7 @@ def get_irrigation_decision(farmer_id, lat, lon, crop_type, soil_type, planting_
             "amount_litres_per_ha": boosted,
             "total_litres": int(boosted * farm_size_ha),
             "water_saved_litres": 0,
-            "reason": f"⚠️ Heat stress alert! Temperature {T}°C. Increase water by 40% to {boosted:,} L/ha. Irrigate in the evening (after 5 PM).",
+            "reason": f"Heat stress alert! Temperature {T}°C. Increase water by 40% to {boosted:,} L/ha. Irrigate in the evening (after 5 PM).",
             "urgency": "critical"
         }
     elif RH < 30 and T > 32:
@@ -295,6 +384,7 @@ def get_irrigation_decision(farmer_id, lat, lon, crop_type, soil_type, planting_
     decision["etc_mm"] = etc_adj
     decision["kc"] = kc
     decision["farm_size_ha"] = farm_size_ha
+    decision["soil_moisture_pct"] = soil_moisture
 
     # Store in database
     try:
@@ -310,6 +400,43 @@ def get_irrigation_decision(farmer_id, lat, lon, crop_type, soil_type, planting_
         print(f"[SmartFarm] DB log error: {e}")
 
     return decision
+
+
+# ═══════════════════════════════════════════════════════════
+# 4b. FARMER ACTIVITY LOGGING
+# ═══════════════════════════════════════════════════════════
+def log_farmer_activity(farmer_id, activity_type, detail="", amount=0):
+    """
+    Log what the farmer ACTUALLY did.
+    activity_type: 'watered', 'skipped', 'applied_fertilizer', 'harvested'
+    """
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO farmer_activity (farmer_id, activity_type, detail, amount) VALUES (?,?,?,?)",
+            (farmer_id, activity_type, detail, amount)
+        )
+        conn.commit()
+        conn.close()
+        print(f"[SmartFarm] Activity logged: farmer {farmer_id} -> {activity_type}")
+        return True
+    except Exception as e:
+        print(f"[SmartFarm] Activity log error: {e}")
+        return False
+
+
+def get_farmer_activities(farmer_id, limit=10):
+    """Get recent farmer activities."""
+    try:
+        conn = get_db_connection()
+        rows = conn.execute(
+            "SELECT * FROM farmer_activity WHERE farmer_id = ? ORDER BY logged_at DESC LIMIT ?",
+            (farmer_id, limit)
+        ).fetchall()
+        conn.close()
+        return [{"type": r["activity_type"], "detail": r["detail"], "amount": r["amount"], "date": r["logged_at"]} for r in rows]
+    except Exception:
+        return []
 
 
 # ═══════════════════════════════════════════════════════════
@@ -559,3 +686,24 @@ def get_total_water_saved(farmer_id):
         return result[0]
     except Exception:
         return 0
+
+def get_farmer_activity_history(farmer_id, limit=10):
+    """Get last N logged activities from DB."""
+    try:
+        conn = get_db_connection()
+        rows = conn.execute(
+            "SELECT * FROM farmer_activity WHERE farmer_id = ? ORDER BY logged_at DESC LIMIT ?",
+            (farmer_id, limit)
+        ).fetchall()
+        conn.close()
+        return [{
+            "id": r["id"],
+            "activity_type": r["activity_type"],
+            "detail": r["detail"],
+            "amount": r["amount"],
+            "date": r["logged_at"]
+        } for r in rows]
+    except Exception as e:
+        print(f"[SmartFarm] Activity history query error: {e}")
+        return []
+
