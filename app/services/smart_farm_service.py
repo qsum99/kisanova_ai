@@ -128,14 +128,17 @@ def _get_seasonal_weather():
 def get_growth_info(crop_type, planting_date_str):
     """Get current growth stage, Kc, days info for a crop."""
     crop = CROP_DB.get(crop_type, CROP_DB.get("rice"))  # default to rice
-    try:
-        pd = datetime.strptime(planting_date_str, "%Y-%m-%d").date()
-    except (ValueError, TypeError):
-        pd = date.today() - timedelta(days=30)
-
-    days = (date.today() - pd).days
-    if days < 0:
-        days = 0
+    
+    if isinstance(planting_date_str, int):
+        days = planting_date_str
+    else:
+        try:
+            pd = datetime.strptime(planting_date_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            pd = date.today() - timedelta(days=30)
+        days = (date.today() - pd).days
+        if days < 0:
+            days = 0
 
     duration = crop["duration_days"]
     current_stage = crop["stages"][-1]  # default to last stage
@@ -665,16 +668,70 @@ def get_irrigation_history(farmer_id, limit=7):
         return []
 
 def get_ndvi_history(farmer_id, limit=30):
-    """Get NDVI history from DB."""
+    """Get NDVI history from DB. Auto-generates simulated growth points from planting_date to today if history is sparse."""
     try:
         conn = get_db_connection()
         rows = conn.execute(
             "SELECT * FROM ndvi_log WHERE farmer_id = ? ORDER BY created_at DESC LIMIT ?",
             (farmer_id, limit)
         ).fetchall()
+        
+        # Fetch the farmer's profile to see planting date and crop type
+        profile = conn.execute(
+            "SELECT crop_type, planting_date FROM farmer_profile WHERE id = ?",
+            (farmer_id,)
+        ).fetchone()
         conn.close()
-        return [{"date": r["created_at"], "ndvi_score": r["ndvi_score"], "health": r["health_status"], "stage": r["growth_stage"]} for r in rows]
-    except Exception:
+        
+        history = []
+        if profile and (not rows or len(rows) < 3):
+            # Auto-generate points from planting date to today
+            crop_type = profile["crop_type"]
+            try:
+                planting_date = datetime.strptime(profile["planting_date"], "%Y-%m-%d")
+            except Exception:
+                planting_date = datetime.now() - timedelta(days=30)
+                
+            today = datetime.now()
+            days_grown = (today - planting_date).days
+            if days_grown < 0:
+                days_grown = 0
+                
+            # Generate up to 15-20 points spaced out
+            step = max(1, days_grown // 15)
+            for d in range(0, min(days_grown + 1, 150), step):
+                p_date = planting_date + timedelta(days=d)
+                growth_day = get_growth_info(crop_type, d)
+                kc = growth_day["kc"]
+                ndvi = 0.15 + (kc - 0.3) * (0.70 / 0.95)
+                ndvi = round(max(0.10, min(0.90, ndvi)), 3)
+                
+                if ndvi >= 0.65:
+                    health = "Healthy"
+                elif ndvi >= 0.45:
+                    health = "Moderate"
+                elif ndvi >= 0.30:
+                    health = "Stressed"
+                else:
+                    health = "Critical"
+                    
+                history.append({
+                    "date": p_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "ndvi_score": ndvi,
+                    "health": health,
+                    "stage": growth_day["stage_name"]
+                })
+        else:
+            for r in rows:
+                history.append({
+                    "date": r["created_at"],
+                    "ndvi_score": r["ndvi_score"],
+                    "health": r["health_status"],
+                    "stage": r["growth_stage"]
+                })
+        return history
+    except Exception as e:
+        print(f"[SmartFarm] NDVI history query error: {e}")
         return []
 
 def get_total_water_saved(farmer_id):
