@@ -7,15 +7,13 @@
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="text-success"><i class="bi bi-heptagon-half me-2"></i>Fertilizer & Soil Intelligence</h2>
-    <div id="farmContextBadge" class="badge bg-dark border border-secondary p-2 fs-6">
-      Loading farm profile...
-    </div>
+    <div id="farmContextBadge" class="badge bg-dark border border-secondary p-2 fs-6">Loading...</div>
   </div>
 
   <div class="row" id="loadingState">
     <div class="col-12 text-center py-5">
       <div class="spinner-border text-success" role="status"></div>
-      <p class="mt-3 text-muted">Loading soil data and fertilizer recommendations...</p>
+      <p class="mt-3 text-muted">Computing ICAR-based fertilizer recommendation...</p>
     </div>
   </div>
 
@@ -23,204 +21,182 @@
     <div class="col-12">
       <div class="alert alert-warning">
         <h4 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Setup Required</h4>
-        <p>You need to set up your farm location and soil details to receive fertilizer alerts.</p>
+        <p>Set up your farm location and soil type to receive fertilizer recommendations.</p>
         <a href="/farm-setup" class="btn btn-warning mt-2">Go to Farm Setup</a>
       </div>
     </div>
   </div>
 
   <div id="mainContent" class="row d-none g-4">
-    
-    <!-- Latest Recommendation -->
+
+    <!-- Current Recommendation -->
     <div class="col-lg-8">
       <div class="card bg-dark border-success shadow h-100">
         <div class="card-header bg-success text-dark d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 fw-bold"><i class="bi bi-stars me-2"></i>Latest Fertilizer Recommendation</h5>
-          <span class="badge bg-dark text-light" id="recDateBadge">--</span>
+          <h5 class="mb-0 fw-bold"><i class="bi bi-stars me-2"></i>Current Recommendation (ICAR)</h5>
+          <span class="badge bg-dark text-light" id="growthStageBadge">--</span>
         </div>
         <div class="card-body">
-          <div id="noRecState" class="d-none">
-            <p class="text-muted">No fertilizer recommendations available yet.</p>
-            <button class="btn btn-outline-success" id="generateBtn">Generate Recommendation Now</button>
+          <h3 class="text-success mb-2" id="fertTypeVal">--</h3>
+          <p class="fs-5 text-light mb-3" id="fertReasonVal">--</p>
+
+          <!-- Apply Now NPK -->
+          <h6 class="text-info mb-2">📌 Apply Now (this stage):</h6>
+          <div class="row text-center mb-3 g-3">
+            <div class="col-4">
+              <div class="p-3 border border-info rounded bg-dark">
+                <h6 class="text-info mb-1">Nitrogen (N)</h6>
+                <h3 class="mb-0 text-light"><span id="applyNVal">0</span> <small class="fs-6 text-muted">kg/ha</small></h3>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 border border-warning rounded bg-dark">
+                <h6 class="text-warning mb-1">Phosphorus (P)</h6>
+                <h3 class="mb-0 text-light"><span id="applyPVal">0</span> <small class="fs-6 text-muted">kg/ha</small></h3>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 border border-danger rounded bg-dark">
+                <h6 class="text-danger mb-1">Potassium (K)</h6>
+                <h3 class="mb-0 text-light"><span id="applyKVal">0</span> <small class="fs-6 text-muted">kg/ha</small></h3>
+              </div>
+            </div>
           </div>
-          
-          <div id="recContent">
-            <h3 class="text-success mb-3" id="fertTypeVal">--</h3>
-            <p class="fs-5 text-light mb-4" id="fertReasonVal">--</p>
-            
-            <div class="row text-center mb-4 g-3">
-              <div class="col-4">
-                <div class="p-3 border border-secondary rounded bg-dark">
-                  <h6 class="text-info mb-1">Nitrogen (N)</h6>
-                  <h3 class="mb-0 text-light"><span id="nVal">0</span> <small class="fs-6 text-muted">kg/ha</small></h3>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="p-3 border border-secondary rounded bg-dark">
-                  <h6 class="text-warning mb-1">Phosphorus (P)</h6>
-                  <h3 class="mb-0 text-light"><span id="pVal">0</span> <small class="fs-6 text-muted">kg/ha</small></h3>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="p-3 border border-secondary rounded bg-dark">
-                  <h6 class="text-danger mb-1">Potassium (K)</h6>
-                  <h3 class="mb-0 text-light"><span id="kVal">0</span> <small class="fs-6 text-muted">kg/ha</small></h3>
-                </div>
+
+          <div class="bg-dark border border-secondary p-3 rounded mb-3">
+            <strong><i class="bi bi-clock-history me-2 text-info"></i>When to Apply:</strong>
+            <span class="text-light" id="timingVal">--</span>
+          </div>
+
+          <!-- Total Season NPK -->
+          <h6 class="text-muted mb-2">📊 Total Season Requirement (ICAR):</h6>
+          <div class="row text-center mb-3 g-2">
+            <div class="col-4">
+              <div class="p-2 border border-secondary rounded bg-dark">
+                <small class="text-muted">N Total</small>
+                <div class="text-info fw-bold" id="totalNVal">0</div>
               </div>
             </div>
-            
-            <div class="bg-dark border border-secondary p-3 rounded">
-              <strong><i class="bi bi-clock-history me-2 text-info"></i>Timing:</strong> <span id="timingVal" class="text-light">--</span>
+            <div class="col-4">
+              <div class="p-2 border border-secondary rounded bg-dark">
+                <small class="text-muted">P Total</small>
+                <div class="text-warning fw-bold" id="totalPVal">0</div>
+              </div>
             </div>
-            
-            <div id="alertsContainer" class="mt-4">
-              <!-- Dynamically populated alerts (leaching, deficiency, pest, amendments) -->
+            <div class="col-4">
+              <div class="p-2 border border-secondary rounded bg-dark">
+                <small class="text-muted">K Total</small>
+                <div class="text-danger fw-bold" id="totalKVal">0</div>
+              </div>
             </div>
+          </div>
+
+          <div class="bg-dark border border-secondary p-3 rounded mb-3">
+            <strong><i class="bi bi-journal-text me-2 text-warning"></i>ICAR Timing Guide:</strong>
+            <span class="text-light" id="icarTimingVal">--</span>
+          </div>
+
+          <div id="alertsContainer" class="mt-3"></div>
+
+          <div class="bg-dark border border-secondary p-3 rounded mt-3">
+            <strong><i class="bi bi-info-circle me-2 text-muted"></i>ICAR Notes:</strong>
+            <span class="text-muted" id="icarNotesVal">--</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Soil Profile -->
+    <!-- Soil & Crop Info -->
     <div class="col-lg-4">
       <div class="card bg-dark border-secondary shadow h-100">
         <div class="card-header border-secondary">
-          <h5 class="mb-0 text-info"><i class="bi bi-layers-fill me-2"></i>Soil Profile</h5>
+          <h5 class="mb-0 text-info"><i class="bi bi-layers-fill me-2"></i>Crop & Soil Profile</h5>
         </div>
         <div class="card-body">
-          <div class="mb-4 text-center">
-            <h6 class="text-muted text-uppercase mb-1">Soil Texture</h6>
-            <h4 class="text-light" id="soilTextureVal">--</h4>
-          </div>
-          
-          <hr class="border-secondary">
-          
           <ul class="list-group list-group-flush bg-transparent">
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between align-items-center px-0 border-secondary">
-              <span>Soil pH</span>
-              <span class="badge bg-primary rounded-pill fs-6" id="phVal">--</span>
+            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+              <span>Crop</span>
+              <span class="text-success fw-bold" id="cropVal">--</span>
             </li>
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between align-items-center px-0 border-secondary">
-              <span>Est. Nitrogen</span>
-              <span class="text-info" id="soilNVal">-- kg/ha</span>
+            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+              <span>Soil Type</span>
+              <span class="text-warning fw-bold" id="soilVal">--</span>
             </li>
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between align-items-center px-0 border-secondary">
-              <span>Est. Phosphorus</span>
-              <span class="text-warning" id="soilPVal">-- kg/ha</span>
+            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+              <span>Growth Stage</span>
+              <span class="text-info fw-bold" id="stageVal">--</span>
             </li>
-            <li class="list-group-item bg-transparent text-light d-flex justify-content-between align-items-center px-0 border-secondary">
-              <span>Est. Potassium</span>
-              <span class="text-danger" id="soilKVal">-- kg/ha</span>
+            <li class="list-group-item bg-transparent text-light d-flex justify-content-between px-0 border-secondary">
+              <span>Day</span>
+              <span class="text-light" id="dayVal">--</span>
             </li>
           </ul>
-          
-          <p class="text-muted small mt-4 mb-0"><i class="bi bi-info-circle me-1"></i>Soil data estimated via ISRIC SoilGrids.</p>
+          <p class="text-muted small mt-4 mb-0"><i class="bi bi-book me-1"></i>Recommendations follow ICAR (Indian Council of Agricultural Research) guidelines specific to your crop × soil combination.</p>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    loadFertilizerData();
-    
-    const genBtn = document.getElementById('generateBtn');
-    if (genBtn) {
-        genBtn.addEventListener('click', async () => {
-            genBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            genBtn.disabled = true;
-            try {
-                await loadFertilizerData();
-            } catch (e) {
-                console.error(e);
-            } finally {
-                genBtn.innerHTML = 'Generate Recommendation Now';
-                genBtn.disabled = false;
-            }
-        });
-    }
-});
+document.addEventListener('DOMContentLoaded', () => { loadFertilizerData(); });
 
 async function loadFertilizerData() {
     try {
         const res = await fetch('/api/phase5/fertilizer-data');
         const data = await res.json();
-        
         document.getElementById('loadingState').classList.add('d-none');
-        
+
         if (!data.success) {
             document.getElementById('setupRequired').classList.remove('d-none');
             return;
         }
-        
-        document.getElementById('mainContent').classList.remove('d-none');
-        
-        // Context
-        document.getElementById('farmContextBadge').innerHTML = 
-            `Live Fertilizer Engine`;
-            
-        const rec = data.decision;
-        const soil_data = rec.soil_data;
-            
-        // Soil Data
-        if (soil_data) {
-            document.getElementById('soilTextureVal').textContent = soil_data.texture || 'Loam';
-            document.getElementById('phVal').textContent = soil_data.ph || '--';
-            document.getElementById('soilNVal').textContent = soil_data.nitrogen ? soil_data.nitrogen + ' kg/ha' : '--';
-            document.getElementById('soilPVal').textContent = soil_data.phosphorus ? soil_data.phosphorus + ' kg/ha' : '--';
-            document.getElementById('soilKVal').textContent = soil_data.potassium ? soil_data.potassium + ' kg/ha' : '--';
-        }
-        
-        // Recommendation
-        if (rec) {
-            document.getElementById('recContent').classList.remove('d-none');
-            document.getElementById('noRecState').classList.add('d-none');
-            
-            document.getElementById('recDateBadge').textContent = new Date().toLocaleDateString();
-            document.getElementById('fertTypeVal').textContent = rec.fertilizer_type;
-            document.getElementById('fertReasonVal').textContent = rec.reason;
-            
-            // Just simulate split components for the UI display based on the total amount
-            const total = rec.amount_kg_per_ha || 0;
-            document.getElementById('nVal').textContent = Math.round(total * 0.5);
-            document.getElementById('pVal').textContent = Math.round(total * 0.25);
-            document.getElementById('kVal').textContent = Math.round(total * 0.25);
-            
-            document.getElementById('timingVal').textContent = rec.timing || 'Apply immediately';
-            
-            // Handle Alerts
-            renderAlerts(rec);
-            
-        } else {
-            document.getElementById('recContent').classList.add('d-none');
-            document.getElementById('noRecState').classList.remove('d-none');
-        }
-        
-    } catch (error) {
-        console.error("Error loading fertilizer data:", error);
-    }
-}
 
-function renderAlerts(rec) {
-    const container = document.getElementById('alertsContainer');
-    container.innerHTML = '';
-    
-    // Amendments
-    if (rec.amendments && rec.amendments.length > 0) {
-        rec.amendments.forEach(a => {
-            container.innerHTML += `
-                <div class="alert alert-primary d-flex">
-                    <i class="bi bi-magic fs-4 me-3"></i>
-                    <div>
-                        <h6 class="alert-heading mb-1">Soil Amendment Required</h6>
-                        <p class="mb-0 small">${a}</p>
-                    </div>
-                </div>`;
-        });
+        document.getElementById('mainContent').classList.remove('d-none');
+        const rec = data.decision;
+
+        document.getElementById('farmContextBadge').innerHTML =
+            `🌾 ${data.crop_type.charAt(0).toUpperCase() + data.crop_type.slice(1)} | 🏜️ ${data.soil_type.charAt(0).toUpperCase() + data.soil_type.slice(1)} Soil`;
+
+        document.getElementById('growthStageBadge').textContent =
+            `${rec.growth_stage} — Day ${rec.days_since_planting}`;
+
+        document.getElementById('fertTypeVal').textContent = rec.fertilizer_type;
+        document.getElementById('fertReasonVal').textContent = rec.reason;
+
+        document.getElementById('applyNVal').textContent = rec.apply_n_kg_ha;
+        document.getElementById('applyPVal').textContent = rec.apply_p_kg_ha;
+        document.getElementById('applyKVal').textContent = rec.apply_k_kg_ha;
+        document.getElementById('timingVal').textContent = rec.timing;
+
+        document.getElementById('totalNVal').textContent = rec.total_season_n + ' kg/ha';
+        document.getElementById('totalPVal').textContent = rec.total_season_p + ' kg/ha';
+        document.getElementById('totalKVal').textContent = rec.total_season_k + ' kg/ha';
+
+        document.getElementById('icarTimingVal').textContent = rec.icar_timing;
+        document.getElementById('icarNotesVal').textContent = rec.icar_notes;
+
+        document.getElementById('cropVal').textContent = rec.crop_type.charAt(0).toUpperCase() + rec.crop_type.slice(1);
+        document.getElementById('soilVal').textContent = rec.soil_type.charAt(0).toUpperCase() + rec.soil_type.slice(1);
+        document.getElementById('stageVal').textContent = rec.growth_stage;
+        document.getElementById('dayVal').textContent = `Day ${rec.days_since_planting}`;
+
+        // Amendments
+        const ac = document.getElementById('alertsContainer');
+        ac.innerHTML = '';
+        if (rec.amendments && rec.amendments.length > 0) {
+            rec.amendments.forEach(a => {
+                ac.innerHTML += `
+                    <div class="alert alert-warning d-flex">
+                        <i class="bi bi-exclamation-triangle fs-4 me-3"></i>
+                        <div><p class="mb-0">${a}</p></div>
+                    </div>`;
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
     }
 }
 </script>
