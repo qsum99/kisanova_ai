@@ -18,59 +18,66 @@
   }
 
   .auth-header .icon {
-    font-size: 3rem;
+    font-size: 3.5rem;
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
   }
 
   .auth-header h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(100deg, var(--green) 0%, var(--cyan) 100%);
+    background: linear-gradient(135deg, var(--green) 0%, var(--cyan) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 8px;
+    letter-spacing: -0.02em;
   }
 
   .auth-header p {
     color: var(--muted);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   .auth-tabs {
     display: flex;
     gap: 0;
-    margin-bottom: 28px;
+    margin-bottom: 30px;
     border-radius: 14px;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(8px);
   }
 
   .auth-tab {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     text-align: center;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     text-decoration: none;
-    color: var(--dim);
-    background: var(--surface);
-    transition: all 0.2s;
-    font-family: 'Inter', sans-serif;
+    color: var(--muted);
+    background: transparent;
+    transition: all 0.25s ease;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    cursor: pointer;
+    border: none;
   }
 
   .auth-tab.active {
-    background: rgba(74, 222, 128, 0.1);
-    color: var(--green);
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--cyan);
+    border-bottom: 2px solid var(--cyan);
   }
 
   .auth-tab:hover:not(.active) {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.04);
     color: var(--text);
   }
 
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 500px) { .grid-2 { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}

@@ -19,57 +19,62 @@
   }
 
   .auth-header .icon {
-    font-size: 3rem;
+    font-size: 3.5rem;
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
   }
 
   .auth-header h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(100deg, var(--green) 0%, var(--cyan) 100%);
+    background: linear-gradient(135deg, var(--green) 0%, var(--cyan) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 8px;
+    letter-spacing: -0.02em;
   }
 
   .auth-header p {
     color: var(--muted);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   .auth-tabs {
     display: flex;
     gap: 0;
-    margin-bottom: 28px;
+    margin-bottom: 30px;
     border-radius: 14px;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(8px);
   }
 
   .auth-tab {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     text-align: center;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     text-decoration: none;
-    color: var(--dim);
-    background: var(--surface);
-    transition: all 0.2s;
-    font-family: 'Inter', sans-serif;
+    color: var(--muted);
+    background: transparent;
+    transition: all 0.25s ease;
+    font-family: 'Outfit', 'Inter', sans-serif;
     cursor: pointer;
     border: none;
   }
 
   .auth-tab.active {
-    background: rgba(74, 222, 128, 0.1);
-    color: var(--green);
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--cyan);
+    border-bottom: 2px solid var(--cyan);
   }
 
   .auth-tab:hover:not(.active) {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.04);
     color: var(--text);
   }
 
@@ -77,12 +82,12 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 20px 0;
-    color: var(--dim);
-    font-size: 0.75rem;
-    font-weight: 600;
+    margin: 24px 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
   }
 
   .divider::before,
@@ -90,35 +95,39 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--border);
+    background: rgba(255, 255, 255, 0.08);
   }
 
   #admin-form { display: none; }
 
   /* Dark select override for login type */
   .login-select {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(255, 255, 255, 0.11) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #f1f5f9 !important;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.93rem;
-    padding: 11px 14px;
-    border-radius: 11px;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 12px 16px;
+    border-radius: 12px;
     width: 100%;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    appearance: auto;
-    -webkit-appearance: auto;
+    transition: all 0.25s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 16px center !important;
+    background-size: 12px !important;
   }
 
   .login-select:focus {
-    border-color: var(--green) !important;
-    background: rgba(74, 222, 128, 0.06) !important;
-    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.13) !important;
+    border-color: var(--cyan) !important;
+    background-color: rgba(34, 211, 238, 0.06) !important;
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2) !important;
     outline: none;
   }
 
   .login-select option {
-    background: #1e293b;
+    background: #111827;
     color: #f1f5f9;
   }
 
@@ -133,14 +142,14 @@
 
   .toggle-password {
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
-    color: var(--dim);
+    color: var(--muted);
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     padding: 0;
     transition: color 0.2s;
   }
